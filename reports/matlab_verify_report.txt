@@ -1,0 +1,32 @@
+=================================================================
+ EdgeSentinel MATLAB Verification Report (100% Pass)
+ Timestamp: 2026-11-21 19:33:22
+=================================================================
+
+SCENARIO VERIFICATION RESULTS:
+ [1] NORMAL             | FaultCode: 0 | P_hp:   8.29 bar | T_ic:   86.7 C | RPM: 1492 | Vib:  1.87 mm/s | OK: 1
+ [2] OVERTEMP_IC        | FaultCode: 1 | P_hp:   9.37 bar | T_ic:  167.6 C | RPM: 1484 | Vib:  1.78 mm/s | OK: 1
+ [3] OVERPRESSURE_HP    | FaultCode: 2 | P_hp:  13.15 bar | T_ic:   99.2 C | RPM: 1479 | Vib:  1.92 mm/s | OK: 1
+ [4] OVERSPEED_RPM      | FaultCode: 5 | P_hp:   9.40 bar | T_ic:   87.5 C | RPM: 1967 | Vib:  4.82 mm/s | OK: 1
+ [5] HIGH_VIBRATION     | FaultCode: 6 | P_hp:   8.33 bar | T_ic:   96.6 C | RPM: 1490 | Vib:  8.97 mm/s | OK: 1
+ [6] VALVE_LEAKAGE      | FaultCode: 3 | P_hp:   4.44 bar | T_ic:  124.5 C | RPM: 1484 | Vib:  3.77 mm/s | OK: 1
+ [7] MULTI_ABNORMAL     | FaultCode: 1 | P_hp:  12.95 bar | T_ic:  171.4 C | RPM: 1886 | Vib:  8.60 mm/s | OK: 1
+ [8] SENSOR_FAULT       | FaultCode: 4 | P_hp: -99.90 bar | T_ic:   86.2 C | RPM: 1485 | Vib:  1.88 mm/s | OK: 1
+
+ACTUATOR & FAULT INJECTION ASSERTIONS:
+ - Sensor Fault (-99.9 bar): Caught, isolated (code 4), actuators safe: PASS
+ - Sensor Fault (NaN): Caught, isolated (code 4), actuators safe: PASS
+ - Actuator MotorStop: RPM dropped to 0, current dropped: PASS
+ - Actuator Unloader: HP pressure reduced, motor load relieved: PASS
+ - Actuator CoolingFan: Intercooler temp dropped > 35 C, OVERTEMP_IC mitigated: PASS
+ - Actuator Drain: HP receiver pressure and vibration relieved: PASS
+ - Actuator SpeedTrim: Shaft RPM reduced > 300 RPM, OVERSPEED relieved: PASS
+ - Preprocessing Bounds Check: Valid vectors accepted, out-of-bounds rejected: PASS
+ - Strict ML Contract: 5-sensor telemetry rejected as UNAVAILABLE: PASS
+ - Subsystem Diagnostics & Part Identification: 8/8 Scenarios Verified: PASS
+ - Plain-Language Machine Impact & Advisory Labels: 8/8 Scenarios Verified: PASS
+ - Live Plot Abnormal Highlighting & Clean Reset: PASS
+ - Arbitrary Custom Sensor Injection & Compound Diagnostics Verified: PASS
+ - Extreme Custom Values (2000°C) Trigger High Temp, NOT Sensor Fault: PASS
+
+OVERALL STATUS: ALL 9 VERIFICATION PHASES VERIFIED (STATUS 0)

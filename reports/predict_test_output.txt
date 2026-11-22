@@ -1,0 +1,51 @@
+5-Sensor Test:
+{
+  "status": "UNAVAILABLE",
+  "ml_available": false,
+  "message": "ML INFERENCE NOT AVAILABLE \u2013 REQUIRED FEATURES MISSING",
+  "missing_features": [
+    "Accelerometer1RMS",
+    "Accelerometer2RMS",
+    "Thermocouple",
+    "Voltage",
+    "Volume Flow RateRMS"
+  ],
+  "provided_features": [
+    "Temperature",
+    "vibration",
+    "Pressure",
+    "Current",
+    "speed"
+  ],
+  "anomaly_probability": null,
+  "threshold": 0.43,
+  "model_version": "2.0.0-calibrated"
+}
+
+8-Feature SKAB Test:
+{
+  "status": "NORMAL",
+  "ml_available": true,
+  "message": "Inference completed successfully using 8-feature Random Forest",
+  "anomaly_probability": 0.0448,
+  "threshold": 0.43,
+  "model_version": "2.0.0-calibrated",
+  "top_contributor": "Volume Flow RateRMS",
+  "contributing_features": [
+    {
+      "feature": "Volume Flow RateRMS",
+      "importance": 0.2494,
+      "value": 105.0
+    },
+    {
+      "feature": "Accelerometer2RMS",
+      "importance": 0.2419,
+      "value": 0.2
+    },
+    {
+      "feature": "Thermocouple",
+      "importance": 0.2026,
+      "value": 26.0
+    }
+  ]
+}

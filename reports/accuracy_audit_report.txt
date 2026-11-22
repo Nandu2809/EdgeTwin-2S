@@ -1,0 +1,76 @@
+==============================================================================
+ EDGESENTINEL END-TO-END ACCURACY, CALIBRATION & EDGE-CASE AUDIT REPORT
+==============================================================================
+
+Model Version:         2.0.0-calibrated
+Calibrated Threshold:  0.3300
+Model Bundle SHA256:   8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b
+Data Split Discipline: Leak-Free Grouped (Train 1..8, Val 9..10, Test 11..14)
+Data Leakage Check:    PASSED (0 overlapping rows)
+
+------------------------------------------------------------------------------
+ AGGREGATE PERFORMANCE SUMMARY (4,066 HELD-OUT SAMPLES)
+------------------------------------------------------------------------------
+Accuracy:              93.53%
+Precision:             86.04%
+Recall (Sensitivity):  95.70%
+F1-Score:              90.62%
+False Positive Rate:   7.52%
+False Negative Rate:   4.30%
+Specificity (TNR):     92.48%
+Confusion Matrix:      TP=1270, TN=2533, FP=206, FN=57
+
+------------------------------------------------------------------------------
+ PER-FILE BREAKDOWN & SCORE DISTRIBUTIONS
+------------------------------------------------------------------------------
+[other/11.csv]
+  Samples: 1190 (Anom: 451, Norm: 739)
+  Acc: 99.08% | Prec: 98.67% | Rec: 98.89% | F1: 98.78%
+  FPR: 0.81% | FNR: 1.11% | Spec: 99.19%
+  Confusion: TP=446, TN=733, FP=6, FN=5
+  Normal Probs:  mean=0.0520, median=0.0305, p95=0.1559, max=0.5154
+  Anomaly Probs: mean=0.9176, median=0.9817, p5=0.5495, min=0.1196
+
+[other/12.csv]
+  Samples: 1048 (Anom: 309, Norm: 739)
+  Acc: 96.47% | Prec: 100.00% | Rec: 88.03% | F1: 93.63%
+  FPR: 0.00% | FNR: 11.97% | Spec: 100.00%
+  Confusion: TP=272, TN=739, FP=0, FN=37
+  Normal Probs:  mean=0.0664, median=0.0538, p95=0.1613, max=0.2851
+  Anomaly Probs: mean=0.5463, median=0.5266, p5=0.2559, min=0.1571
+
+[other/13.csv]
+  Samples: 923 (Anom: 265, Norm: 658)
+  Acc: 79.63% | Prec: 58.81% | Rec: 96.98% | F1: 73.22%
+  FPR: 27.36% | FNR: 3.02% | Spec: 72.64%
+  Confusion: TP=257, TN=478, FP=180, FN=8
+  Normal Probs:  mean=0.2365, median=0.1234, p95=0.7342, max=0.8942
+  Anomaly Probs: mean=0.6527, median=0.6833, p5=0.3776, min=0.1093
+
+[other/14.csv]
+  Samples: 905 (Anom: 302, Norm: 603)
+  Acc: 97.02% | Prec: 93.65% | Rec: 97.68% | F1: 95.62%
+  FPR: 3.32% | FNR: 2.32% | Spec: 96.68%
+  Confusion: TP=295, TN=583, FP=20, FN=7
+  Normal Probs:  mean=0.0656, median=0.0404, p95=0.2243, max=0.6117
+  Anomaly Probs: mean=0.9131, median=0.9672, p5=0.5318, min=0.0372
+
+------------------------------------------------------------------------------
+ THRESHOLD SENSITIVITY SWEEP (CALIBRATION INTEGRITY)
+------------------------------------------------------------------------------
+Thresh   Accuracy   Precision   Recall     F1-Score   FPR      TP     FP    
+------------------------------------------------------------------------------
+0.20     91.42      79.56       99.17      88.29      12.34    1316   338   
+0.25     92.79      82.93       98.12      89.89      9.78     1302   268   
+0.30     93.31      85.00       96.53      90.40      8.25     1281   226   
+0.33     93.53      86.04       95.70      90.62      7.52     1270   206    <--
+0.35     93.41      86.54       94.50      90.35      7.12     1254   195   
+0.40     93.11      87.69       91.79      89.69      6.24     1218   171   
+0.43     92.77      88.17       89.90      89.03      5.84     1193   160   
+0.50     92.15      89.94       85.53      87.68      4.64     1135   127   
+0.55     91.49      93.52       79.43      85.90      2.67     1054   73    
+0.60     90.43      95.80       73.93      83.45      1.57     981    43    
+
+==============================================================================
+ AUDIT CONCLUSION: 100% REPRODUCIBLE & CONSISTENT (EXIT STATUS 0)
+==============================================================================

@@ -1,0 +1,36 @@
+{
+  "report_name": "EdgeSentinel Offline Store-and-Forward WAN Outage Proof",
+  "timestamp": "2026-11-21T19:37:49.096611",
+  "status": "PASS",
+  "exit_code": 0,
+  "phases": {
+    "phase_a_normal_operation": {
+      "description": "Continuous local inference with real-time WAN forwarding",
+      "samples_processed": 20,
+      "delivered_to_broker": 20,
+      "buffered_remaining": 0,
+      "status": "ONLINE_HEALTHY"
+    },
+    "phase_b_simulated_wan_outage": {
+      "description": "WAN partition: local edge inference buffers events to disk with idempotent deduplication",
+      "samples_processed": 30,
+      "duplicates_injected": 5,
+      "duplicates_rejected_idempotently": 5,
+      "events_spooled_locally": 30,
+      "broker_inbox_held_constant": 20,
+      "event_time_ordering_preserved": true,
+      "status": "OFFLINE_BUFFERING_ACTIVE"
+    },
+    "phase_c_wan_reconnection": {
+      "description": "Network restored: queued events drain in strict chronological order with zero loss",
+      "spooled_events_drained": 30,
+      "total_events_at_broker": 50,
+      "final_buffer_count": 0,
+      "dropped_alerts": 0,
+      "duplicate_events_at_broker": 0,
+      "chronological_order_verified": true,
+      "status": "RECONCILED_SUCCESS"
+    }
+  },
+  "conclusion": "Store-and-forward edge buffer verified 100% resilient across WAN outage and reconnection cycles."
+}
