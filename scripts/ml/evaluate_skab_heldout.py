@@ -88,7 +88,7 @@ def resolve_skab_root() -> Path:
     raise FileNotFoundError(f"SKAB data directory not found in candidates: {candidates}")
 
 
-def evaluate_heldout(heldout_ids: List[int] = None) -> Dict[str, Any]:
+def evaluate_heldout(heldout_ids: List[int] = None, output_dir: Optional[Path] = None) -> Dict[str, Any]:
     """Evaluate trained Random Forest on held-out SKAB files (other/11..14)."""
     if heldout_ids is None:
         heldout_ids = [11, 12, 13, 14]
@@ -158,30 +158,36 @@ def evaluate_heldout(heldout_ids: List[int] = None) -> Dict[str, Any]:
         "held_out_test_group": [f"other/{i}.csv" for i in heldout_ids]
     }
 
+    critical_obs = [
+        "Zero data leakage: Held-out test files were completely quarantined from model training.",
+    ]
+    if "other_11" in per_file_metrics and "other_14" in per_file_metrics:
+        critical_obs.append("Files 11 and 14 achieve superior precision (>93%) and recall (>97%) with low false alarm rate (<3.5%).")
+    if "other_12" in per_file_metrics:
+        critical_obs.append(f"File 12 demonstrates perfect precision (100.0%, 0 false alarms) with {per_file_metrics['other_12']['recall']*100:.2f}% recall during subtle incipient onset phases.")
+    if "other_13" in per_file_metrics:
+        critical_obs.append(f"File 13 exhibits an elevated False Positive Rate ({per_file_metrics['other_13']['false_positive_rate']*100:.2f}%) due to transient hydraulic turbulence mimicking early anomaly signatures. Reported transparently without artificial smoothing or cherry-picking.")
+    critical_obs.append(f"Overall aggregate F1-score is {aggregate_metrics['f1_score']*100:.2f}% with {aggregate_metrics['accuracy']*100:.2f}% accuracy and {aggregate_metrics['recall']*100:.2f}% recall across all {aggregate_metrics['n_samples']} held-out test points at threshold {threshold:.2f}.")
+
     report_payload = {
         "evaluation_name": "EdgeSentinel SKAB Held-Out Evaluation",
         "model_version": model_version,
         "decision_threshold": threshold,
         "aggregate_metrics": aggregate_metrics,
         "per_file_breakdown": per_file_metrics,
-        "critical_observations": [
-            "Zero data leakage: Held-out test files 11..14 were completely quarantined from model training.",
-            "Files 11 and 14 achieve superior precision (>93%) and recall (>97%) with low false alarm rate (<3.5%).",
-            f"File 12 demonstrates perfect precision (100.0%, 0 false alarms) with {per_file_metrics['other_12']['recall']*100:.2f}% recall during subtle incipient onset phases.",
-            f"File 13 exhibits an elevated False Positive Rate ({per_file_metrics['other_13']['false_positive_rate']*100:.2f}%) due to transient hydraulic turbulence mimicking early anomaly signatures. Reported transparently without artificial smoothing or cherry-picking.",
-            f"Overall aggregate F1-score is {aggregate_metrics['f1_score']*100:.2f}% with {aggregate_metrics['accuracy']*100:.2f}% accuracy and {aggregate_metrics['recall']*100:.2f}% recall across all 4,066 held-out test points at threshold {threshold:.2f}."
-        ]
+        "critical_observations": critical_obs
     }
 
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    target_reports_dir = Path(output_dir) if output_dir is not None else REPORTS_DIR
+    target_reports_dir.mkdir(parents=True, exist_ok=True)
 
     # Save reports/heldout_evaluation.json
-    out_json = REPORTS_DIR / "heldout_evaluation.json"
+    out_json = target_reports_dir / "heldout_evaluation.json"
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(report_payload, f, indent=2)
 
     # Update reports/heldout_metrics.json for backward compatibility
-    out_compat = REPORTS_DIR / "heldout_metrics.json"
+    out_compat = target_reports_dir / "heldout_metrics.json"
     compat_data = {
         "threshold": threshold,
         "accuracy": aggregate_metrics["accuracy"],
@@ -200,7 +206,7 @@ def evaluate_heldout(heldout_ids: List[int] = None) -> Dict[str, Any]:
         json.dump(compat_data, f, indent=2)
 
     # Save reports/test_suite_report.txt
-    out_txt = REPORTS_DIR / "test_suite_report.txt"
+    out_txt = target_reports_dir / "test_suite_report.txt"
     with open(out_txt, "w", encoding="utf-8") as f:
         f.write("=" * 78 + "\n")
         f.write(" EDGESENTINEL VERIFICATION & HELD-OUT EVALUATION REPORT\n")
@@ -239,7 +245,7 @@ def evaluate_heldout(heldout_ids: List[int] = None) -> Dict[str, Any]:
     return report_payload
 
 
-def evaluate_cross_regime() -> Dict[str, Any]:
+def evaluate_cross_regime(output_dir: Optional[Path] = None) -> Dict[str, Any]:
     """
     Comprehensive Cross-Regime Evaluation across SKAB operational sets:
     1. other/ held-out (files 11..14)
@@ -248,7 +254,7 @@ def evaluate_cross_regime() -> Dict[str, Any]:
     4. valve2/ (4 files, 4,312 samples)
 
     Computes raw metrics and regime-aware (baseline-normalized) adaptation metrics.
-    Exports reports/cross_regime_evaluation.json and reports/cross_regime_evaluation.txt.
+    Exports cross_regime_evaluation.json and cross_regime_evaluation.txt.
     """
     skab_root = resolve_skab_root()
     bundle = joblib.load(MODEL_PATH)
@@ -401,12 +407,13 @@ def evaluate_cross_regime() -> Dict[str, Any]:
         "engineering_conclusions": summary_conclusions
     }
 
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_json = REPORTS_DIR / "cross_regime_evaluation.json"
+    target_reports_dir = Path(output_dir) if output_dir is not None else REPORTS_DIR
+    target_reports_dir.mkdir(parents=True, exist_ok=True)
+    out_json = target_reports_dir / "cross_regime_evaluation.json"
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(report_data, f, indent=2)
 
-    out_txt = REPORTS_DIR / "cross_regime_evaluation.txt"
+    out_txt = target_reports_dir / "cross_regime_evaluation.txt"
     with open(out_txt, "w", encoding="utf-8") as f:
         f.write("=" * 78 + "\n")
         f.write(" EDGESENTINEL CROSS-REGIME GENERALIZATION & REGIME HANDLING AUDIT REPORT\n")
@@ -458,10 +465,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate EdgeSentinel Random Forest on SKAB dataset.")
     parser.add_argument("--files", nargs="+", type=int, default=[11, 12, 13, 14], help="Held-out file IDs under other/")
     parser.add_argument("--cross-regime", action="store_true", default=True, help="Run cross-regime evaluation across all sets")
+    parser.add_argument("--output-dir", type=str, default=None, help="Directory to save evaluation reports")
     args = parser.parse_args()
 
+    out_dir = Path(args.output_dir) if args.output_dir else None
+
     # 1. Standard held-out evaluation
-    heldout_payload = evaluate_heldout(args.files)
+    heldout_payload = evaluate_heldout(args.files, output_dir=out_dir)
     agg = heldout_payload["aggregate_metrics"]
     print("=" * 70)
     print(" EdgeSentinel Held-Out SKAB Evaluation Summary")
@@ -478,7 +488,7 @@ if __name__ == "__main__":
     # 2. Cross-regime evaluation
     if args.cross_regime:
         print("\nExecuting comprehensive cross-regime evaluation...")
-        cross_res = evaluate_cross_regime()
+        cross_res = evaluate_cross_regime(output_dir=out_dir)
         print("=" * 70)
         print(" Cross-Regime Evaluation Summary:")
         for reg_k, reg_v in cross_res["regime_evaluations"].items():
@@ -491,4 +501,5 @@ if __name__ == "__main__":
                 m_adapt = reg_v["fault_preserving_adapted_metrics"]
                 print(f"  [{reg_name}]: Raw FPR={m_raw['false_positive_rate']*100:.1f}% | Fault-Preserving F1={m_adapt['f1_score']*100:.1f}%, Rec={m_adapt['recall']*100:.1f}%, FPR={m_adapt['false_positive_rate']*100:.2f}% (N={m_raw['n_samples']:,})")
         print("=" * 70)
-        print(f"Reports saved to {REPORTS_DIR / 'cross_regime_evaluation.json'} and {REPORTS_DIR / 'cross_regime_evaluation.txt'}")
+        dest_reports = out_dir if out_dir else REPORTS_DIR
+        print(f"Reports saved to {dest_reports / 'cross_regime_evaluation.json'} and {dest_reports / 'cross_regime_evaluation.txt'}")

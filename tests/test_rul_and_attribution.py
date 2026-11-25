@@ -18,7 +18,13 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.ml.predict import predict_reading, StreamingDriftDetector
-from scripts.ml.cmapss_rul import train_cmapss_rul_model, estimate_engine_rul, RUL_REPORT_PATH
+from scripts.ml.cmapss_rul import (
+    train_cmapss_rul_model,
+    estimate_engine_rul,
+    get_cached_rul_bundle,
+    RUL_MODEL_PATH,
+    RUL_REPORT_PATH
+)
 
 
 class TestRULAndAttribution(unittest.TestCase):
@@ -124,6 +130,74 @@ class TestRULAndAttribution(unittest.TestCase):
         self.assertIn(est["prognostic_status"], {"HEALTHY_NOMINAL", "MAINTENANCE_DUE", "CRITICAL_MAINTENANCE_REQUIRED"})
         self.assertGreaterEqual(len(est["top_degrading_sensors"]), 1)
         self.assertIn("prognostic_scope_disclaimer", est)
+
+    def test_05_cmapss_rul_nan_none_and_invalid_guard(self):
+        """Verify estimate_engine_rul guards against missing, None, NaN, Inf, and non-numeric values."""
+        valid_sample = {
+            "s2": 642.35, "s3": 1585.20, "s4": 1404.50, "s7": 553.80,
+            "s8": 2388.06, "s9": 9050.10, "s11": 47.35, "s12": 521.80,
+            "s13": 2388.05, "s14": 8130.20, "s15": 8.42, "s17": 392.0,
+            "s20": 38.85, "s21": 23.35
+        }
+
+        # Non-dict
+        res = estimate_engine_rul(None)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+        self.assertIsNone(res["predicted_rul_cycles"])
+
+        # Missing feature
+        partial = dict(valid_sample)
+        del partial["s11"]
+        res = estimate_engine_rul(partial)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+        self.assertIn("Missing", res["message"])
+
+        # None value
+        with_none = dict(valid_sample)
+        with_none["s11"] = None
+        res = estimate_engine_rul(with_none)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+        self.assertIn("s11=None", res["message"])
+
+        # NaN value
+        with_nan = dict(valid_sample)
+        with_nan["s3"] = float("nan")
+        res = estimate_engine_rul(with_nan)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+
+        # Inf value
+        with_inf = dict(valid_sample)
+        with_inf["s7"] = float("inf")
+        res = estimate_engine_rul(with_inf)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+
+        # Non-numeric string
+        with_str = dict(valid_sample)
+        with_str["s2"] = "corrupt_data"
+        res = estimate_engine_rul(with_str)
+        self.assertEqual(res["status"], "UNAVAILABLE")
+
+    def test_06_cmapss_rul_module_level_cache(self):
+        """Verify module-level cache avoids reloading from disk when mtime is unchanged."""
+        bundle1 = get_cached_rul_bundle(RUL_MODEL_PATH)
+        bundle2 = get_cached_rul_bundle(RUL_MODEL_PATH)
+        self.assertIs(bundle1, bundle2, "Cached bundle reference must be reused when file is unmodified")
+
+    def test_07_cmapss_custom_output_dir(self):
+        """Verify train_cmapss_rul_model writes cleanly to custom output_dir."""
+        scratch_dir = PROJECT_ROOT / "reports" / "test_scratch_rul"
+        if scratch_dir.exists():
+            import shutil
+            shutil.rmtree(scratch_dir)
+
+        metrics = train_cmapss_rul_model(dataset_name="FD001", n_estimators=10, max_depth=5, output_dir=scratch_dir)
+        self.assertTrue((scratch_dir / "cmapss_rul_model.joblib").exists())
+        self.assertTrue((scratch_dir / "cmapss_rul_metrics.json").exists())
+        self.assertIn("rmse_cycles", metrics)
+
+        # Clean up
+        import shutil
+        shutil.rmtree(scratch_dir)
 
 
 if __name__ == "__main__":

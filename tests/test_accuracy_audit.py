@@ -430,6 +430,23 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
             tv_data = json.load(f)
         self.assertEqual(tv_data["selected_threshold"], self.threshold)
 
+    def test_11_evaluate_skab_custom_output_dir(self):
+        """Verify evaluate_heldout writes to a custom output_dir cleanly without touching reports/."""
+        from scripts.ml.evaluate_skab_heldout import evaluate_heldout
+        scratch_dir = PROJECT_ROOT / "reports" / "test_scratch_skab"
+        if scratch_dir.exists():
+            import shutil
+            shutil.rmtree(scratch_dir)
+
+        res = evaluate_heldout([11], output_dir=scratch_dir)
+        self.assertTrue((scratch_dir / "heldout_evaluation.json").exists())
+        self.assertTrue((scratch_dir / "heldout_metrics.json").exists())
+        self.assertTrue((scratch_dir / "test_suite_report.txt").exists())
+        self.assertIn("aggregate_metrics", res)
+
+        import shutil
+        shutil.rmtree(scratch_dir)
+
 
 def generate_accuracy_audit_reports() -> Dict[str, Any]:
     """Execute full audit calculations, generate distributions, and export reports."""

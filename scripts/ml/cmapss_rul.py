@@ -25,6 +25,7 @@ import json
 import joblib
 import numpy as np
 import pandas as pd
+import argparse
 from typing import Dict, Any, List, Optional, Tuple
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -33,6 +34,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CMAPSS_RAW_DIR = PROJECT_ROOT / "data" / "raw" / "cmapss"
 RUL_MODEL_PATH = PROJECT_ROOT / "models" / "cmapss_rul_model.joblib"
 RUL_REPORT_PATH = PROJECT_ROOT / "reports" / "cmapss_rul_metrics.json"
+
+_MODEL_CACHE: Dict[str, Tuple[float, Dict[str, Any]]] = {}
 
 CMAPSS_COLUMNS = ["unit", "time", "setting1", "setting2", "setting3"] + [f"s{i}" for i in range(1, 22)]
 
@@ -77,7 +80,8 @@ def train_cmapss_rul_model(
     dataset_name: str = "FD001",
     n_estimators: int = 50,
     max_depth: int = 12,
-    random_state: int = 42
+    random_state: int = 42,
+    output_dir: Optional[Path] = None
 ) -> Dict[str, Any]:
     """Train and evaluate C-MAPSS RUL regression model."""
     train_path = CMAPSS_RAW_DIR / f"train_{dataset_name}.txt"
@@ -154,6 +158,15 @@ def train_cmapss_rul_model(
         )
     }
 
+    # Determine target paths
+    if output_dir is not None:
+        out_dir_path = Path(output_dir)
+        target_model_path = out_dir_path / "cmapss_rul_model.joblib"
+        target_report_path = out_dir_path / "cmapss_rul_metrics.json"
+    else:
+        target_model_path = RUL_MODEL_PATH
+        target_report_path = RUL_REPORT_PATH
+
     # Save model bundle
     bundle = {
         "model": reg,
@@ -162,30 +175,55 @@ def train_cmapss_rul_model(
         "baseline_stats": baseline_stats,
         "metrics": metrics
     }
-    RUL_MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(bundle, RUL_MODEL_PATH)
+    target_model_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(bundle, target_model_path)
 
     # Save metrics report
-    RUL_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(RUL_REPORT_PATH, "w", encoding="utf-8") as f:
+    target_report_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(target_report_path, "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
 
     return metrics
 
 
-def estimate_engine_rul(sensor_readings: Dict[str, Any]) -> Dict[str, Any]:
+def get_cached_rul_bundle(model_path: Path = RUL_MODEL_PATH) -> Dict[str, Any]:
+    """Retrieve RUL model bundle from memory cache, reloading if file mtime changed."""
+    p = Path(model_path).resolve()
+    p_str = str(p)
+    if not p.exists():
+        raise FileNotFoundError(f"RUL model bundle not found at {p}")
+    mtime = p.stat().st_mtime
+    if p_str in _MODEL_CACHE:
+        cached_mtime, cached_bundle = _MODEL_CACHE[p_str]
+        if cached_mtime == mtime:
+            return cached_bundle
+    bundle = joblib.load(p)
+    _MODEL_CACHE[p_str] = (mtime, bundle)
+    return bundle
+
+
+def estimate_engine_rul(sensor_readings: Dict[str, Any], model_path: Optional[Path] = None) -> Dict[str, Any]:
     """
     Estimate Remaining Useful Life (RUL) and Health Index (HI) from turbofan sensor readings.
     Provides sensor attribution detailing which parameters indicate degradation.
     """
-    if not RUL_MODEL_PATH.exists():
+    target_path = Path(model_path) if model_path is not None else RUL_MODEL_PATH
+    if not target_path.exists():
         # Train on demand if bundle not yet written
-        train_cmapss_rul_model()
+        train_cmapss_rul_model(output_dir=target_path.parent if model_path is not None else None)
 
-    bundle = joblib.load(RUL_MODEL_PATH)
+    bundle = get_cached_rul_bundle(target_path)
     reg = bundle["model"]
     features = bundle["features"]
     baseline_stats = bundle["baseline_stats"]
+
+    if not isinstance(sensor_readings, dict):
+        return {
+            "status": "UNAVAILABLE",
+            "message": "Input sensor_readings must be a dictionary",
+            "predicted_rul_cycles": None,
+            "health_index": None
+        }
 
     missing = [f for f in features if f not in sensor_readings]
     if missing:
@@ -196,7 +234,31 @@ def estimate_engine_rul(sensor_readings: Dict[str, Any]) -> Dict[str, Any]:
             "health_index": None
         }
 
-    x = pd.DataFrame([[float(sensor_readings[f]) for f in features]], columns=features)
+    invalid_reasons = []
+    numeric_values = []
+    for f in features:
+        val = sensor_readings[f]
+        if val is None:
+            invalid_reasons.append(f"{f}=None")
+            continue
+        try:
+            val_float = float(val)
+            if not np.isfinite(val_float):
+                invalid_reasons.append(f"{f}={val}")
+            else:
+                numeric_values.append(val_float)
+        except (ValueError, TypeError):
+            invalid_reasons.append(f"{f}={val}")
+
+    if invalid_reasons:
+        return {
+            "status": "UNAVAILABLE",
+            "message": f"Non-finite, null, or invalid sensor values: {invalid_reasons}",
+            "predicted_rul_cycles": None,
+            "health_index": None
+        }
+
+    x = pd.DataFrame([numeric_values], columns=features)
     pred_rul = float(reg.predict(x)[0])
     clipped_max = float(bundle.get("rul_clip_threshold", 125.0))
     health_index = float(np.clip(pred_rul / clipped_max, 0.0, 1.0))
@@ -236,6 +298,12 @@ def estimate_engine_rul(sensor_readings: Dict[str, Any]) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    res = train_cmapss_rul_model()
+    parser = argparse.ArgumentParser(description="Train and evaluate C-MAPSS RUL model.")
+    parser.add_argument("--output-dir", type=str, default=None, help="Directory to save model bundle and metrics")
+    parser.add_argument("--dataset", type=str, default="FD001", help="Dataset name (e.g. FD001)")
+    args = parser.parse_args()
+
+    out_dir = Path(args.output_dir) if args.output_dir else None
+    res = train_cmapss_rul_model(dataset_name=args.dataset, output_dir=out_dir)
     print("C-MAPSS Model Trained:")
     print(json.dumps(res, indent=2))
