@@ -1,6 +1,6 @@
 {
   "manifest_version": "1.0.0",
-  "created_timestamp": "2026-11-25T20:44:56.748734",
+  "created_timestamp": "2026-11-25T22:39:03.413676",
   "dataset_name": "SKAB (Skoltech Anomaly Benchmark)",
   "dataset_files": {
     "other/1.csv": {
@@ -163,8 +163,8 @@
   "artifact_provenance": {
     "primary_model_path": "models/random_forest.joblib",
     "primary_model_sha256": "8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b",
-    "secondary_model_path": "scripts/models/random_forest.joblib",
-    "secondary_model_sha256": "8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b",
+    "secondary_model_path": null,
+    "secondary_model_status": "DEDUPLICATED (redundant scripts/models/ copy eliminated)",
     "model_version": "2.0.0-calibrated",
     "shipped_artifact_lineage_audit": "Audit finding: The shipped baseline model artifact records 10,450 training samples from an earlier composite experimental partition (files 1, 2, 4, 5, 7, 9, 10, 11, 13, 14), which explains the sample count difference vs. the documented 8,392 training split (files 1..8). The shipped model is preserved for verified benchmark compatibility across Section 11.1 matrix tests, while explicit clean retraining on the documented 8,392 split runs deterministically without silently reusing stale model files."
   }

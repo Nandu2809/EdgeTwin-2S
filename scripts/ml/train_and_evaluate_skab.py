@@ -17,7 +17,7 @@ Implements Problem Statement 5 Acceptance Gates:
 4. Comprehensive Training Manifest:
    - Exports reports/training_manifest.json with dataset files, hashes, row counts,
      split definitions, 21-row exclusion, seed, decision threshold, and artifact SHA-256.
-5. Model bundle export to models/random_forest.joblib and scripts/models/random_forest.joblib.
+5. Model bundle export to models/random_forest.joblib.
 6. Export honest, complete metrics to:
    - reports/random_forest_metrics.json
    - reports/per_file_metrics.csv
@@ -40,7 +40,6 @@ from sklearn.ensemble import RandomForestClassifier
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = PROJECT_ROOT / "models"
-SCRIPTS_MODELS_DIR = PROJECT_ROOT / "scripts" / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 
 REQUIRED_FEATURES = [
@@ -72,8 +71,6 @@ def resolve_skab_dir() -> Path:
     candidates = [
         PROJECT_ROOT / "data" / "raw" / "skab" / "other",
         PROJECT_ROOT / "data" / "raw" / "SKAB" / "data" / "other",
-        PROJECT_ROOT / "data" / "raw" / "skab" / "data" / "other",
-        PROJECT_ROOT / "data" / "raw" / "SKAB-master" / "data" / "other",
     ]
     for c in candidates:
         if c.exists() and (c / "1.csv").exists():
@@ -308,8 +305,8 @@ def generate_training_manifest(
         "artifact_provenance": {
             "primary_model_path": "models/random_forest.joblib",
             "primary_model_sha256": model_sha256,
-            "secondary_model_path": "scripts/models/random_forest.joblib",
-            "secondary_model_sha256": model_sha256,
+            "secondary_model_path": None,
+            "secondary_model_status": "DEDUPLICATED (redundant scripts/models/ copy eliminated)",
             "model_version": "2.0.0-calibrated",
             "shipped_artifact_lineage_audit": (
                 "Audit finding: The shipped baseline model artifact records 10,450 training samples from an "
@@ -435,9 +432,7 @@ def train_and_evaluate(force_retrain: bool = False, isolate_overlap: bool = True
             "model_version": "2.0.0-calibrated"
         }
         MODELS_DIR.mkdir(parents=True, exist_ok=True)
-        SCRIPTS_MODELS_DIR.mkdir(parents=True, exist_ok=True)
         joblib.dump(bundle, MODELS_DIR / "random_forest.joblib")
-        joblib.dump(bundle, SCRIPTS_MODELS_DIR / "random_forest.joblib")
         print(f"      Saved retrained model bundle to {MODELS_DIR / 'random_forest.joblib'}")
 
     model_bytes = (MODELS_DIR / "random_forest.joblib").read_bytes()

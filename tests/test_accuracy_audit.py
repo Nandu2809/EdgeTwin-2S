@@ -47,7 +47,6 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
     def setUpClass(cls):
         """Load bundles and prepare datasets."""
         cls.bundle_primary = joblib.load(MODEL_PRIMARY)
-        cls.bundle_secondary = joblib.load(MODEL_SECONDARY)
         cls.model = cls.bundle_primary["model"]
         cls.features = cls.bundle_primary["features"]
         cls.threshold = float(cls.bundle_primary["threshold"])
@@ -61,14 +60,16 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
     # 1. Model Artifact & Reproducibility Equivalence
     # =========================================================================
 
-    def test_01_bundle_hash_equivalence(self):
-        """Primary and secondary model bundles must be byte-for-byte identical."""
-        self.assertTrue(MODEL_PRIMARY.exists(), f"Primary bundle missing: {MODEL_PRIMARY}")
-        self.assertTrue(MODEL_SECONDARY.exists(), f"Secondary bundle missing: {MODEL_SECONDARY}")
+    def test_01_canonical_bundle_integrity_and_deduplication(self):
+        """Canonical model bundle must exist and redundant copies must be eliminated to prevent archive bloat."""
+        self.assertTrue(MODEL_PRIMARY.exists(), f"Primary canonical bundle missing: {MODEL_PRIMARY}")
+        self.assertFalse(MODEL_SECONDARY.exists(), f"Redundant bundle copy in scripts/models/ must be removed: {MODEL_SECONDARY}")
 
         h1 = hashlib.sha256(MODEL_PRIMARY.read_bytes()).hexdigest()
-        h2 = hashlib.sha256(MODEL_SECONDARY.read_bytes()).hexdigest()
-        self.assertEqual(h1, h2, f"Bundle hash mismatch: {h1} != {h2}")
+        self.assertEqual(len(h1), 64, f"Invalid SHA-256 digest length: {len(h1)}")
+        self.assertIn("model", self.bundle_primary)
+        self.assertIn("features", self.bundle_primary)
+        self.assertIn("threshold", self.bundle_primary)
 
     def test_02_bundle_metadata_and_predict_consistency(self):
         """Bundle metadata must match predict.py configuration exactly."""

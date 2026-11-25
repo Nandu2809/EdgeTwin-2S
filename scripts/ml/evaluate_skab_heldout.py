@@ -81,7 +81,6 @@ def resolve_skab_root() -> Path:
     candidates = [
         PROJECT_ROOT / "data" / "raw" / "skab",
         PROJECT_ROOT / "data" / "raw" / "SKAB" / "data",
-        PROJECT_ROOT / "data" / "raw" / "SKAB-master" / "data",
     ]
     for c in candidates:
         if c.exists() and (c / "other").exists():
