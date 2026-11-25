@@ -31,10 +31,10 @@ other/14.csv     905    33.4     97.0     93.7     97.7     95.6     3.3      29
 ------------------------------------------------------------------------------
 
 TRANSPARENT SCIENTIFIC OBSERVATIONS:
- - Zero data leakage: Held-out test files 11..14 were completely quarantined from model training.
+ - Zero data leakage: Held-out test files were completely quarantined from model training.
  - Files 11 and 14 achieve superior precision (>93%) and recall (>97%) with low false alarm rate (<3.5%).
  - File 12 demonstrates perfect precision (100.0%, 0 false alarms) with 88.03% recall during subtle incipient onset phases.
  - File 13 exhibits an elevated False Positive Rate (27.36%) due to transient hydraulic turbulence mimicking early anomaly signatures. Reported transparently without artificial smoothing or cherry-picking.
- - Overall aggregate F1-score is 90.62% with 93.53% accuracy and 95.70% recall across all 4,066 held-out test points at threshold 0.33.
+ - Overall aggregate F1-score is 90.62% with 93.53% accuracy and 95.70% recall across all 4066 held-out test points at threshold 0.33.
 
 ==============================================================================

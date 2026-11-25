@@ -1,6 +1,6 @@
 {
   "report_name": "EdgeSentinel SKAB Cross-Regime Generalization & Regime Handling Audit",
-  "timestamp": "2026-11-25T23:07:34.803111",
+  "timestamp": "2026-11-25T23:44:02.442028",
   "model_version": "2.0.0-calibrated",
   "decision_threshold": 0.33,
   "regime_evaluations": {
