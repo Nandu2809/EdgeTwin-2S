@@ -131,10 +131,10 @@
     ]
   },
   "scientific_integrity_notes": [
-    "Leak-free grouped validation: Held-out test files 11..14 were never seen during training or threshold tuning.",
+    "Leak-free grouped validation: Held-out test files 11..14 quarantined from training and threshold selection.",
     "Files 11 and 14 achieve superior precision (>93%) and recall (>97%) with low false alarm rate (<3.5%).",
     "File 12 shows 100% precision (0 false alarms) with 88.03% recall during subtle incipient onset.",
     "File 13 exhibits an elevated FPR (27.36%) due to transient hydraulic startup dynamics reported transparently without artificial smoothing.",
-    "Aggregate held-out F1-score is 90.62% with 93.53% accuracy and 95.70% recall across all 4,066 test samples at calibrated threshold 0.33."
+    "Aggregate held-out F1-score is 90.62% with 93.53% accuracy and 95.70% recall across test samples at calibrated threshold 0.33."
   ]
 }

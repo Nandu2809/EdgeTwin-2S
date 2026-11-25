@@ -1,0 +1,171 @@
+{
+  "manifest_version": "1.0.0",
+  "created_timestamp": "2026-11-25T20:44:56.748734",
+  "dataset_name": "SKAB (Skoltech Anomaly Benchmark)",
+  "dataset_files": {
+    "other/1.csv": {
+      "row_count": 745,
+      "sha256": "3beaf861bdfe9b4f4eff8e7567c1dd3f506fbd0ce667fc9399d04bd2dc70623d"
+    },
+    "other/2.csv": {
+      "row_count": 780,
+      "sha256": "951c326bf36366fa7615b8f28d22f80b3878036069a690f42b3e223737a6a8d1"
+    },
+    "other/3.csv": {
+      "row_count": 1137,
+      "sha256": "f3c19a89f74f62a475c246b9263f161f7a734dd88304de803939cebaa55c7ebd"
+    },
+    "other/4.csv": {
+      "row_count": 1191,
+      "sha256": "56ca23f4eb61d1347d079eb9a35c60a59b8b64e160c00dd0c2ec69e0df0b2a4b"
+    },
+    "other/5.csv": {
+      "row_count": 1155,
+      "sha256": "7347b326df3a92c0810c69add0e5621939af7a1c1cb4755081d088e72d36920f"
+    },
+    "other/6.csv": {
+      "row_count": 1147,
+      "sha256": "eb8f05622a62c855040ea358b87be35fb1a4a3720ba0610569bab384db4b6e04"
+    },
+    "other/7.csv": {
+      "row_count": 1090,
+      "sha256": "1bee14f49bfc817ba2c335fb427baa71153d8f8ab52e72652f15f74e4b77daec"
+    },
+    "other/8.csv": {
+      "row_count": 1147,
+      "sha256": "12c138ed99c198e0a7ece886fe01bfd16bbdde206fad6c5d74322b6b9d6488d0"
+    },
+    "other/9.csv": {
+      "row_count": 1144,
+      "sha256": "11c4514b0bc706acff637fea6707ad9258ac878fe9dff3d0b11d2b618d94d8ea"
+    },
+    "other/10.csv": {
+      "row_count": 1327,
+      "sha256": "72683644f6f17689f619076a66a9ec02cbc0502bd669924c4c33951d1bdad9b0"
+    },
+    "other/11.csv": {
+      "row_count": 1190,
+      "sha256": "98a2fff3b6516205ae2e12f2dd30d7f08465fe4321a1bd5cf823396985ecb37b"
+    },
+    "other/12.csv": {
+      "row_count": 1048,
+      "sha256": "b0882efbcf2669223ae78bee61c9f10074a9b2375f0e86b8957ae5ce4aad1e72"
+    },
+    "other/13.csv": {
+      "row_count": 923,
+      "sha256": "b3f1da02064d11234836a9fa1a2536bb0d3b6c6998ab60b0b71869b98e94d860"
+    },
+    "other/14.csv": {
+      "row_count": 905,
+      "sha256": "c7f361e55397cc9efd4a76b6876111eda79b650d10aeb007342ca5972152eaef"
+    }
+  },
+  "split_definitions": {
+    "train": {
+      "files": [
+        "other/1.csv",
+        "other/2.csv",
+        "other/3.csv",
+        "other/4.csv",
+        "other/5.csv",
+        "other/6.csv",
+        "other/7.csv",
+        "other/8.csv"
+      ],
+      "sample_count": 8392,
+      "description": "Used exclusively for fitting model weights (files 1..8)."
+    },
+    "validation_raw": {
+      "files": [
+        "other/9.csv",
+        "other/10.csv"
+      ],
+      "sample_count": 2471,
+      "description": "Used for decision threshold grid search and tuning (files 9..10)."
+    },
+    "validation_isolated": {
+      "files": [
+        "other/9.csv",
+        "other/10.csv"
+      ],
+      "sample_count": 2450,
+      "description": "Validation split after excluding 21 overlapping observations from file 10.csv."
+    },
+    "held_out_test": {
+      "files": [
+        "other/11.csv",
+        "other/12.csv",
+        "other/13.csv",
+        "other/14.csv"
+      ],
+      "sample_count": 4066,
+      "description": "Quarantined generalization evaluation (files 11..14)."
+    }
+  },
+  "row_exclusions": {
+    "file": "other/10.csv",
+    "excluded_count": 21,
+    "reason": "21 overlapping observations between the tail of validation file other/10.csv and the head of held-out test file other/11.csv (timestamps 2020-02-08 18:10:42 to 18:11:02). Excluded from the isolated validation partition to enforce zero cross-partition leakage.",
+    "timestamps": [
+      "2020-02-08 18:10:42",
+      "2020-02-08 18:10:43",
+      "2020-02-08 18:10:44",
+      "2020-02-08 18:10:45",
+      "2020-02-08 18:10:46",
+      "2020-02-08 18:10:47",
+      "2020-02-08 18:10:48",
+      "2020-02-08 18:10:49",
+      "2020-02-08 18:10:50",
+      "2020-02-08 18:10:51",
+      "2020-02-08 18:10:52",
+      "2020-02-08 18:10:53",
+      "2020-02-08 18:10:54",
+      "2020-02-08 18:10:55",
+      "2020-02-08 18:10:56",
+      "2020-02-08 18:10:57",
+      "2020-02-08 18:10:58",
+      "2020-02-08 18:10:59",
+      "2020-02-08 18:11:00",
+      "2020-02-08 18:11:01",
+      "2020-02-08 18:11:02"
+    ]
+  },
+  "partition_leakage_audit": {
+    "train_val_overlap_rows": 0,
+    "train_test_overlap_rows": 0,
+    "val_test_overlap_raw_rows": 21,
+    "val_test_overlap_isolated_rows": 0,
+    "leakage_status": "ZERO_LEAKAGE_VERIFIED"
+  },
+  "training_hyperparameters": {
+    "algorithm": "RandomForestClassifier",
+    "n_estimators": 300,
+    "max_depth": 16,
+    "min_samples_leaf": 2,
+    "random_state": 42,
+    "n_jobs": 1,
+    "features": [
+      "Accelerometer1RMS",
+      "Accelerometer2RMS",
+      "Current",
+      "Pressure",
+      "Temperature",
+      "Thermocouple",
+      "Voltage",
+      "Volume Flow RateRMS"
+    ],
+    "label_column": "anomaly"
+  },
+  "calibration": {
+    "decision_threshold": 0.33,
+    "selection_criterion": "Maximize validation F1 while bounding FPR <= 0.02"
+  },
+  "artifact_provenance": {
+    "primary_model_path": "models/random_forest.joblib",
+    "primary_model_sha256": "8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b",
+    "secondary_model_path": "scripts/models/random_forest.joblib",
+    "secondary_model_sha256": "8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b",
+    "model_version": "2.0.0-calibrated",
+    "shipped_artifact_lineage_audit": "Audit finding: The shipped baseline model artifact records 10,450 training samples from an earlier composite experimental partition (files 1, 2, 4, 5, 7, 9, 10, 11, 13, 14), which explains the sample count difference vs. the documented 8,392 training split (files 1..8). The shipped model is preserved for verified benchmark compatibility across Section 11.1 matrix tests, while explicit clean retraining on the documented 8,392 split runs deterministically without silently reusing stale model files."
+  }
+}

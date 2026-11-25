@@ -292,11 +292,18 @@
   ],
   "data_split_verification": {
     "train_set_samples": 8392,
-    "validation_set_samples": 2471,
+    "validation_set_samples_raw": 2471,
+    "validation_set_samples_isolated": 2450,
     "held_out_test_samples": 4066,
     "train_val_overlap_count": 0,
     "train_test_overlap_count": 0,
-    "data_leakage_status": "ZERO_LEAKAGE_VERIFIED"
+    "val_test_overlap_raw_count": 21,
+    "val_test_overlap_isolated_count": 0,
+    "row_exclusions_file": "other/10.csv",
+    "row_exclusions_count": 21,
+    "row_exclusions_reason": "21 duplicate observations between tail of file 10 and head of file 11 (2020-02-08 18:10:42 to 18:11:02)",
+    "data_leakage_status": "ZERO_LEAKAGE_VERIFIED",
+    "training_manifest_path": "reports/training_manifest.json"
   },
   "score_drift_and_distribution_findings": [
     "File 11: Near-perfect separation (Normal prob mean: 0.0305, Anomaly prob mean: 0.9168). F1: 98.78%.",

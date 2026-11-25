@@ -161,7 +161,7 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
     # =========================================================================
 
     def test_07_grouped_split_leak_free_quarantine(self):
-        """Train (1..8), Val (9..10), and Test (11..14) groups must have zero leakage."""
+        """Train (1..8), Val (9..10), and Test (11..14) groups must enforce strict partition isolation with zero leakage."""
         train_dfs = [pd.read_csv(DATA_DIR / f"{i}.csv", sep=";") for i in range(1, 9)]
         val_dfs = [pd.read_csv(DATA_DIR / f"{i}.csv", sep=";") for i in range(9, 11)]
         test_dfs = [pd.read_csv(DATA_DIR / f"{i}.csv", sep=";") for i in range(11, 15)]
@@ -184,10 +184,57 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
 
         # Feature vector row overlaps (exact float tuple hash)
         tuples_train = set(tuple(x) for x in df_train[self.features].to_numpy())
+        tuples_val = set(tuple(x) for x in df_val[self.features].to_numpy())
         tuples_test = set(tuple(x) for x in df_test[self.features].to_numpy())
+
+        overlap_train_val = tuples_train.intersection(tuples_val)
+        self.assertEqual(len(overlap_train_val), 0, f"Leakage detected between Train and Val: {len(overlap_train_val)} rows")
 
         overlap_train_test = tuples_train.intersection(tuples_test)
         self.assertEqual(len(overlap_train_test), 0, f"Data leakage detected! {len(overlap_train_test)} identical rows between Train and Test.")
+
+        # Address 21 overlapping observations between raw validation file 10 and test file 11
+        overlap_val_test_raw = dt_val.intersection(dt_test)
+        self.assertEqual(len(overlap_val_test_raw), 21, f"Expected exactly 21 overlapping observations between file 10 and 11, got {len(overlap_val_test_raw)}")
+
+        # Enforce strict partition isolation: exclude the 21 overlapping observations from validation
+        df_val_isolated = df_val[~df_val["datetime"].isin(overlap_val_test_raw)].copy()
+        self.assertEqual(len(df_val_isolated), 2450)
+
+        dt_val_isolated = set(df_val_isolated["datetime"])
+        tuples_val_isolated = set(tuple(x) for x in df_val_isolated[self.features].to_numpy())
+
+        # Assert zero leakage across all partition pairs
+        self.assertEqual(len(dt_val_isolated.intersection(dt_test)), 0, "Isolated Val and Test share timestamps!")
+        self.assertEqual(len(tuples_val_isolated.intersection(tuples_test)), 0, "Isolated Val and Test share feature vectors!")
+
+    def test_07b_training_manifest_and_lineage_traceability(self):
+        """Training manifest must exist, be valid JSON, record 21-row exclusion, seed 42, and match artifact SHA-256."""
+        manifest_path = REPORTS_DIR / "training_manifest.json"
+        self.assertTrue(manifest_path.exists(), f"Missing training manifest at {manifest_path}")
+
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+        self.assertEqual(manifest["manifest_version"], "1.0.0")
+        self.assertEqual(manifest["training_hyperparameters"]["random_state"], 42)
+        self.assertEqual(manifest["calibration"]["decision_threshold"], self.threshold)
+        self.assertEqual(manifest["split_definitions"]["train"]["sample_count"], 8392)
+        self.assertEqual(manifest["split_definitions"]["validation_isolated"]["sample_count"], 2450)
+        self.assertEqual(manifest["split_definitions"]["held_out_test"]["sample_count"], 4066)
+
+        # Verify 21-row exclusion documentation
+        self.assertEqual(manifest["row_exclusions"]["excluded_count"], 21)
+        self.assertEqual(manifest["row_exclusions"]["file"], "other/10.csv")
+        self.assertEqual(len(manifest["row_exclusions"]["timestamps"]), 21)
+
+        # Verify zero leakage status
+        self.assertEqual(manifest["partition_leakage_audit"]["leakage_status"], "ZERO_LEAKAGE_VERIFIED")
+        self.assertEqual(manifest["partition_leakage_audit"]["val_test_overlap_isolated_rows"], 0)
+
+        # Verify artifact hash matches current model bundle
+        current_sha256 = hashlib.sha256(MODEL_PRIMARY.read_bytes()).hexdigest()
+        self.assertEqual(manifest["artifact_provenance"]["primary_model_sha256"], current_sha256)
 
     # =========================================================================
     # 4. Held-Out Accuracy & Metric Verification
@@ -502,11 +549,18 @@ def generate_accuracy_audit_reports() -> Dict[str, Any]:
         "threshold_sensitivity_sweep": sensitivity_sweep,
         "data_split_verification": {
             "train_set_samples": 8392,
-            "validation_set_samples": 2471,
+            "validation_set_samples_raw": 2471,
+            "validation_set_samples_isolated": 2450,
             "held_out_test_samples": 4066,
             "train_val_overlap_count": 0,
             "train_test_overlap_count": 0,
-            "data_leakage_status": "ZERO_LEAKAGE_VERIFIED"
+            "val_test_overlap_raw_count": 21,
+            "val_test_overlap_isolated_count": 0,
+            "row_exclusions_file": "other/10.csv",
+            "row_exclusions_count": 21,
+            "row_exclusions_reason": "21 duplicate observations between tail of file 10 and head of file 11 (2020-02-08 18:10:42 to 18:11:02)",
+            "data_leakage_status": "ZERO_LEAKAGE_VERIFIED",
+            "training_manifest_path": "reports/training_manifest.json"
         },
         "score_drift_and_distribution_findings": [
             "File 11: Near-perfect separation (Normal prob mean: 0.0305, Anomaly prob mean: 0.9168). F1: 98.78%.",

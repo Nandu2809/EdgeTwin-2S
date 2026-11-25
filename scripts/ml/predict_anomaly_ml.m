@@ -54,8 +54,8 @@ if exist(mdlFile, 'file') == 2
     [~, idxMax] = max(abs(z));
     topFeat = S.featNames{min(idxMax, numel(S.featNames))};
 else
-    prob = 0.0;
+    prob = NaN;
     isAnom = false;
-    topFeat = 'Model bundle not found on disk';
+    topFeat = 'ML UNAVAILABLE (Model bundle not found on disk; rule-only mode)';
 end
 end

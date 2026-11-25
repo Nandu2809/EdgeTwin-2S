@@ -177,18 +177,34 @@ class TestPanelMatrix(unittest.TestCase):
         self.assertEqual(outage_res["status"], "BUFFERED_OUTAGE")
         self.assertEqual(len(store.get_buffered_events()), 3, "Buffer must remain intact during outage")
 
-        # WAN Recovery / Reconciliation: flush with simulated_outage=False
+        # Verify restart-safety: reopen EventStore on disk and assert pending events reload cleanly
+        restarted_store = EventStore(persistence_file=test_csv_path)
+        restarted_buf = restarted_store.get_buffered_events()
+        self.assertEqual(len(restarted_buf), 3, "Restarted store must reload all unacknowledged pending events")
+        self.assertEqual(restarted_buf[0]["event_id"], "EVT-002")
+        self.assertEqual(restarted_buf[1]["event_id"], "EVT-003")
+        self.assertEqual(restarted_buf[2]["event_id"], "EVT-001")
+
+        # WAN Recovery / Reconciliation: flush with simulated_outage=False from restarted store
         delivered_order = []
 
         def mock_broker(evt):
             delivered_order.append(evt["event_id"])
             return True
 
-        recovery_res = store.flush_forward(sink_fn=mock_broker, simulated_outage=False)
+        recovery_res = restarted_store.flush_forward(sink_fn=mock_broker, simulated_outage=False)
         self.assertEqual(recovery_res["status"], "RECONCILED")
         self.assertEqual(recovery_res["forwarded_count"], 3)
-        self.assertEqual(len(store.get_buffered_events()), 0, "Buffer must be empty after reconciliation")
+        self.assertEqual(len(restarted_store.get_buffered_events()), 0, "Buffer must be empty after reconciliation")
         self.assertEqual(delivered_order, ["EVT-002", "EVT-003", "EVT-001"], "Broker must receive events in event-time order")
+
+        # Verify durable ACK persistence across subsequent restart
+        reopened_post_ack = EventStore(persistence_file=test_csv_path)
+        self.assertEqual(len(reopened_post_ack.get_buffered_events()), 0, "Acknowledged events must not reload into pending buffer")
+        self.assertTrue(reopened_post_ack.is_acknowledged("EVT-001"))
+        self.assertTrue(reopened_post_ack.is_acknowledged("EVT-002"))
+        self.assertTrue(reopened_post_ack.is_acknowledged("EVT-003"))
+        self.assertFalse(reopened_post_ack.insert_event(e1), "Delivered acknowledged events must be rejected as duplicates")
 
         # Verify persistent CSV exists and contains rows
         self.assertTrue(test_csv_path.exists())
@@ -208,11 +224,11 @@ class TestPanelMatrix(unittest.TestCase):
         latencies_ms = []
         n_trials = 500
 
-        # Warm-up 10 calls
-        for _ in range(10):
+        # Dedicated warm-up: 25 calls to prime Python byte-compilation and CPU cache
+        for _ in range(25):
             predict_reading(self.normal_8_reading)
 
-        # Timed benchmark: Local Python predict_reading() function call boundary only
+        # Timed benchmark: Local Python predict_reading() in-memory execution boundary only
         for _ in range(n_trials):
             t0 = time.perf_counter()
             predict_reading(self.normal_8_reading)
@@ -223,25 +239,37 @@ class TestPanelMatrix(unittest.TestCase):
         median_ms = round(float(np.median(lat_arr)), 3)
         p95_ms = round(float(np.percentile(lat_arr, 95)), 3)
         p99_ms = round(float(np.percentile(lat_arr, 99)), 3)
+        p999_ms = round(float(np.percentile(lat_arr, 99.9)), 3)
         max_ms = round(float(np.max(lat_arr)), 3)
         min_ms = round(float(np.min(lat_arr)), 3)
         mean_ms = round(float(np.mean(lat_arr)), 3)
+        std_ms = round(float(np.std(lat_arr)), 3)
 
         self.assertGreater(median_ms, 0.0, "Inference median latency must be positive")
         self.assertLess(median_ms, 20.0, f"Optimized inference median latency must be well below 20 ms, got {median_ms} ms")
+        self.assertLess(p95_ms, 30.0, f"Tail latency p95 must be below 30 ms, got {p95_ms} ms")
         self.assertGreaterEqual(max_ms, median_ms, "Max latency must be >= median latency")
 
         benchmark_payload = {
             "benchmark_name": "EdgeSentinel Section 11.1 Inference Latency Benchmark",
             "benchmark_boundary": "local Python predict_reading() function call only (excluding network, I/O, and dashboard rendering)",
+            "measurement_scope": (
+                "Software-only execution timing of local Python predict_reading() in memory. "
+                "Excludes physical transducer ADC conversion, hardware fieldbus propagation, "
+                "MQTT/TLS broker network hops, and UI rendering. Physical hardware and broker "
+                "telemetry latencies are simulated."
+            ),
             "model_version": model_version,
             "num_calls": n_trials,
+            "warmup_calls": 25,
             "median_ms": median_ms,
             "p95_ms": p95_ms,
             "p99_ms": p99_ms,
+            "p999_ms": p999_ms,
             "max_ms": max_ms,
             "min_ms": min_ms,
             "mean_ms": mean_ms,
+            "std_ms": std_ms,
             "sla_threshold_ms": 20.0,
             "sla_passed": bool(median_ms < 20.0),
             "timestamp": datetime.now().isoformat()
@@ -277,7 +305,7 @@ class TestPanelMatrix(unittest.TestCase):
 
 
 def run_suite_and_export_report() -> int:
-    """Execute test suite and export reports/test_suite_report.json with proper exit code."""
+    """Execute test suite and export reports/test_suite_report.json with proper exit code and dynamic checklist."""
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestPanelMatrix)
     runner = unittest.TextTestRunner(verbosity=2)
     start_time = datetime.now()
@@ -285,6 +313,13 @@ def run_suite_and_export_report() -> int:
     end_time = datetime.now()
 
     all_passed = result.wasSuccessful()
+
+    # Dynamically derive checklist status from real test execution results
+    failed_test_names = {
+        test.id().split(".")[-1]
+        for test, _ in result.failures + result.errors
+    }
+
     report = {
         "test_suite_name": "MAH Quantum Section 11.1 Minimum Test Matrix Suite",
         "timestamp_start": start_time.isoformat(),
@@ -296,12 +331,12 @@ def run_suite_and_export_report() -> int:
         "overall_status": "PASS" if all_passed else "FAIL",
         "exit_code": 0 if all_passed else 1,
         "coverage_checklist": {
-            "A_normal_and_known_faults": "PASS",
-            "B_incomplete_five_sensor_unavailable": "PASS",
-            "C_sensor_dropout_nan_inf_rejection": "PASS",
-            "D_deduplication_and_store_forward_buffer": "PASS",
-            "E_latency_benchmark_percentiles": "PASS",
-            "F_offline_wan_outage_resilience": "PASS"
+            "A_normal_and_known_faults": "FAIL" if "test_normal_and_known_faults" in failed_test_names else "PASS",
+            "B_incomplete_five_sensor_unavailable": "FAIL" if "test_incomplete_five_sensor_input" in failed_test_names else "PASS",
+            "C_sensor_dropout_nan_inf_rejection": "FAIL" if "test_sensor_dropout_and_invalid_values" in failed_test_names else "PASS",
+            "D_deduplication_and_store_forward_buffer": "FAIL" if "test_deduplication_and_store_and_forward_buffer" in failed_test_names else "PASS",
+            "E_latency_benchmark_percentiles": "FAIL" if "test_latency_benchmark" in failed_test_names else "PASS",
+            "F_offline_wan_outage_resilience": "FAIL" if "test_offline_wan_outage_resilience" in failed_test_names else "PASS"
         }
     }
 

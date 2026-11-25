@@ -17,7 +17,7 @@ function [reportTxt, healthTxt, healthCol, recAct, recBanner, recColor, zones, p
 
 if nargin < 10 || isempty(nl), nl = string(newline); else, nl = string(nl); end
 if nargin < 9, topFeat = 'Rule/Threshold'; end
-if nargin < 8, mlProb = double(anom); end
+if nargin < 8, mlProb = NaN; end
 if nargin < 7 || ~isstruct(thresh), thresh = struct(); end
 if nargin < 6, act_fb = [0 0 0 0 0]; end
 if nargin < 5 || ~isstruct(truth), truth = struct('fault_label', 'UNKNOWN'); end
@@ -236,8 +236,13 @@ else
 end
 
 ratioVal = tel.p_hp_bar / max(tel.p_lp_bar, 0.1);
+if isnan(mlProb)
+    mlInfoStr = sprintf('Anom:%d | Code:%d | ML: UNAVAILABLE [Rule-Only] (%s)', double(anom), double(f_code), string(topFeat));
+else
+    mlInfoStr = sprintf('Anom:%d | Code:%d | ML:%.2f (%s)', double(anom), double(f_code), mlProb, string(topFeat));
+end
 reportTxt = string(healthTxt) + nl + ...
-    string(sprintf('Anom:%d | Code:%d | ML:%.2f (%s)', double(anom), double(f_code), mlProb, string(topFeat))) + nl + ...
+    string(mlInfoStr) + nl + ...
     string(sprintf('Ratio:%.2f | ActFb:[%s]', ratioVal, num2str(act_fb > 0.1))) + nl + nl + ...
     'AFFECTED PART:' + nl + string(partStr) + nl + nl + ...
     'POTENTIAL IMPACT:' + nl + string(impactStr) + nl + nl + ...

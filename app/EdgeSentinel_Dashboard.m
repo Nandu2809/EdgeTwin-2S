@@ -690,10 +690,15 @@ stepAndRender(false);
         if fidA > 0
             cleanStat = regexprep(char(string(stat)), '[,|\n\r]+', ' ');
             cleanStat = strtrim(cleanStat);
-            fprintf(fidA, '%s,%s,%s,%s,%.2f,%.2f,%.1f,%.2f,%.2f,%.4f,%s,%s\n', ...
+            if isnan(prob)
+                probStr = 'NaN';
+            else
+                probStr = sprintf('%.4f', double(prob));
+            end
+            fprintf(fidA, '%s,%s,%s,%s,%.2f,%.2f,%.1f,%.2f,%.2f,%s,%s,%s\n', ...
                 char(string(ts)), char(string(eid)), char(string(sc)), char(string(mv)), ...
                 double(php), double(tic), double(rpm), double(vib), double(curr), ...
-                double(prob), cleanStat, char(string(ack)));
+                probStr, cleanStat, char(string(ack)));
             fclose(fidA);
         end
     end
@@ -809,11 +814,11 @@ stepAndRender(false);
         if exist('predict_anomaly_ml', 'file') == 2
             [mlProb, ~, topFeat] = predict_anomaly_ml(tel);
             if isnan(mlProb)
-                mlProb = double(anom);
-                topFeat = 'Rule/Threshold';
+                % ML unavailable for 5-sensor compressor telemetry or missing bundle
+                % Preserve NaN to distinguish missing ML score from an actual 0.0 or 1.0
             end
         else
-            mlProb = double(anom); topFeat = 'Rule/Threshold';
+            mlProb = NaN; topFeat = 'ML UNAVAILABLE (Rule-Only)';
         end
 
         [diagReport, healthSummary, healthColor, recAct, recBanner, recColor, activeZones, partStr, impactStr, fixStr, advisoryStr] = ...
@@ -826,8 +831,13 @@ stepAndRender(false);
         % Dynamic readout updates for Affected Part, Potential Impact & Advisory
         lblStatusTitle.Text = healthSummary;
         lblStatusTitle.FontColor = healthColor;
-        lblMetricsSummary.Text = sprintf('Anom Flag: %d | Fault Code: %d | ML Prob: %.2f (%s)', ...
-            double(anom), double(f_code), mlProb, char(topFeat));
+        if isnan(mlProb)
+            lblMetricsSummary.Text = sprintf('Anom Flag: %d | Fault Code: %d | ML: UNAVAILABLE [Rule-Only Mode] (%s)', ...
+                double(anom), double(f_code), char(topFeat));
+        else
+            lblMetricsSummary.Text = sprintf('Anom Flag: %d | Fault Code: %d | ML Prob: %.2f (%s)', ...
+                double(anom), double(f_code), mlProb, char(topFeat));
+        end
         if hp_ok
             lblRatioContext.Text = sprintf('Stage Compression Ratio (P_hp / P_lp): %.2f  [Nominal >= 2.20]', ratioVal);
             lblRatioContext.FontColor = [0.78 0.85 0.94];
@@ -1276,7 +1286,7 @@ end
 function [reportTxt, healthTxt, healthCol, recAct, recBanner, recColor, zones, partStr, impactStr, fixStr, advisoryStr] = analyzeContinuousState(tel, is_valid, anom, f_code, truth, act_fb, thresh, mlProb, topFeat, nl)
 if nargin < 10 || isempty(nl), nl = string(newline); else, nl = string(nl); end
 if nargin < 9, topFeat = 'Rule/Threshold'; end
-if nargin < 8, mlProb = double(anom); end
+if nargin < 8, mlProb = NaN; end
 if nargin < 7 || ~isstruct(thresh), thresh = struct(); end
 if nargin < 6, act_fb = [0 0 0 0]; end
 if nargin < 5 || ~isstruct(truth), truth = struct('fault_label', 'UNKNOWN'); end
@@ -1497,8 +1507,13 @@ else
 end
 
 ratioVal = tel.p_hp_bar / max(tel.p_lp_bar, 0.1);
+if isnan(mlProb)
+    mlInfoStr = sprintf('Anom:%d | Code:%d | ML: UNAVAILABLE [Rule-Only] (%s)', double(anom), double(f_code), string(topFeat));
+else
+    mlInfoStr = sprintf('Anom:%d | Code:%d | ML:%.2f (%s)', double(anom), double(f_code), mlProb, string(topFeat));
+end
 reportTxt = string(healthTxt) + nl + ...
-    string(sprintf('Anom:%d | Code:%d | ML:%.2f (%s)', double(anom), double(f_code), mlProb, string(topFeat))) + nl + ...
+    string(mlInfoStr) + nl + ...
     string(sprintf('Ratio:%.2f | ActFb:[%s]', ratioVal, num2str(act_fb > 0.1))) + nl + nl + ...
     'AFFECTED PART:' + nl + string(partStr) + nl + nl + ...
     'POTENTIAL IMPACT:' + nl + string(impactStr) + nl + nl + ...

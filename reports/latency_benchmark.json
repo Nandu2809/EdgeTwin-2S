@@ -1,15 +1,19 @@
 {
   "benchmark_name": "EdgeSentinel Section 11.1 Inference Latency Benchmark",
   "benchmark_boundary": "local Python predict_reading() function call only (excluding network, I/O, and dashboard rendering)",
+  "measurement_scope": "Software-only execution timing of local Python predict_reading() in memory. Excludes physical transducer ADC conversion, hardware fieldbus propagation, MQTT/TLS broker network hops, and UI rendering. Physical hardware and broker telemetry latencies are simulated.",
   "model_version": "2.0.0-calibrated",
   "num_calls": 500,
-  "median_ms": 3.448,
-  "p95_ms": 6.773,
-  "p99_ms": 7.966,
-  "max_ms": 9.343,
-  "min_ms": 1.334,
-  "mean_ms": 3.726,
+  "warmup_calls": 25,
+  "median_ms": 2.028,
+  "p95_ms": 5.191,
+  "p99_ms": 6.317,
+  "p999_ms": 7.311,
+  "max_ms": 7.77,
+  "min_ms": 1.275,
+  "mean_ms": 2.441,
+  "std_ms": 1.199,
   "sla_threshold_ms": 20.0,
   "sla_passed": true,
-  "timestamp": "2026-11-21T19:37:48.736717"
+  "timestamp": "2026-11-25T20:45:28.582834"
 }
