@@ -1,7 +1,7 @@
-# EdgeSentinel Pinned Dependencies (Section 11.1 Standard)
-joblib==1.6.0
-pandas==3.1.0
-numpy==2.5.4
-scikit-learn==1.9.1
-scipy==1.18.1
-pytest==9.2.0
+# EdgeTwin-2S Production Dependencies
+joblib>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+scipy>=1.10.0
+pytest>=7.4.0

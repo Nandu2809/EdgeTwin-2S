@@ -24,3 +24,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Test temporary database artifacts
+reports/*.sqlite*
+reports/test_scratch/
+reports/test_store_audit*
+

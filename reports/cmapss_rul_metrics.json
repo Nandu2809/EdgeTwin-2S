@@ -1,0 +1,27 @@
+{
+  "dataset": "FD001",
+  "n_train_samples": 20631,
+  "n_test_engines": 100,
+  "rmse_cycles": 18.37,
+  "mae_cycles": 13.29,
+  "r2_score": 0.8045,
+  "nasa_score": 1096.43,
+  "rul_clip_threshold": 125.0,
+  "feature_importances": {
+    "s11": 0.661,
+    "s9": 0.134,
+    "s4": 0.0695,
+    "s12": 0.0384,
+    "s7": 0.0198,
+    "s14": 0.0192,
+    "s15": 0.0127,
+    "s21": 0.009,
+    "s13": 0.0085,
+    "s2": 0.0084,
+    "s3": 0.0064,
+    "s20": 0.0058,
+    "s8": 0.0051,
+    "s17": 0.0022
+  },
+  "prognostic_scope_disclaimer": "NASA C-MAPSS turbofan engine degradation prognostic modeling is a separate turbofan fleet prognostic module operating alongside the SKAB/compressor monitoring twin."
+}

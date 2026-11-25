@@ -1,8 +1,8 @@
 {
   "test_suite_name": "MAH Quantum Section 11.1 Minimum Test Matrix Suite",
-  "timestamp_start": "2026-11-25T20:31:30.520273",
-  "timestamp_end": "2026-11-25T20:31:32.328212",
-  "duration_seconds": 1.808,
+  "timestamp_start": "2026-11-25T22:53:51.172431",
+  "timestamp_end": "2026-11-25T22:53:56.817389",
+  "duration_seconds": 5.645,
   "total_tests_run": 6,
   "failures_count": 0,
   "errors_count": 0,
