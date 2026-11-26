@@ -1,6 +1,6 @@
 {
   "manifest_version": "1.0.0",
-  "created_timestamp": "2026-11-25T22:39:03.413676",
+  "created_timestamp": "2026-11-26T19:06:24.977462",
   "dataset_name": "SKAB (Skoltech Anomaly Benchmark)",
   "dataset_files": {
     "other/1.csv": {
@@ -162,7 +162,7 @@
   },
   "artifact_provenance": {
     "primary_model_path": "models/random_forest.joblib",
-    "primary_model_sha256": "8ed3fd48676c8a3af770cdbc30d7f735694f23a68566eb2553c4b2dd0a47eb4b",
+    "primary_model_sha256": "49680cc0b83c72b5688b601cf8aea203d387596d6c39bb662670f6bd14903e2f",
     "secondary_model_path": null,
     "secondary_model_status": "DEDUPLICATED (redundant scripts/models/ copy eliminated)",
     "model_version": "2.0.0-calibrated",

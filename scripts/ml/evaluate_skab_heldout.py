@@ -23,6 +23,7 @@ Enforces:
    - reports/test_suite_report.txt
 """
 
+import sys
 from pathlib import Path
 import json
 import argparse
@@ -32,6 +33,8 @@ import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 MODEL_PATH = PROJECT_ROOT / "models" / "random_forest.joblib"
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "skab"
 REPORTS_DIR = PROJECT_ROOT / "reports"

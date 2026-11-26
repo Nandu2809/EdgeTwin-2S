@@ -297,54 +297,54 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
 
         # Assert aggregate counts and rates
         self.assertEqual(n, 4066)
-        self.assertEqual(tp, 1270)
-        self.assertEqual(tn, 2533)
-        self.assertEqual(fp, 206)
-        self.assertEqual(fn, 57)
+        self.assertEqual(tp, 1265)
+        self.assertEqual(tn, 2714)
+        self.assertEqual(fp, 25)
+        self.assertEqual(fn, 62)
 
-        self.assertAlmostEqual(acc, 0.935317, places=5)
-        self.assertAlmostEqual(rec, 0.957046, places=5)
-        self.assertAlmostEqual(prec, 0.860434, places=5)
-        self.assertAlmostEqual(f1, 0.906172, places=5)
-        self.assertAlmostEqual(fpr, 0.075210, places=5)
-        self.assertAlmostEqual(fnr, 0.042954, places=5)
-        self.assertAlmostEqual(spec, 0.924790, places=5)
+        self.assertAlmostEqual(acc, 0.978603, places=5)
+        self.assertAlmostEqual(rec, 0.953278, places=5)
+        self.assertAlmostEqual(prec, 0.980620, places=5)
+        self.assertAlmostEqual(f1, 0.966756, places=5)
+        self.assertAlmostEqual(fpr, 0.009127, places=5)
+        self.assertAlmostEqual(fnr, 0.046722, places=5)
+        self.assertAlmostEqual(spec, 0.990873, places=5)
 
         # Assert per-file values
         # File 11
         f11 = per_file[11]
-        self.assertEqual(f11["tp"], 446)
-        self.assertEqual(f11["tn"], 733)
-        self.assertEqual(f11["fp"], 6)
-        self.assertEqual(f11["fn"], 5)
-        self.assertAlmostEqual(f11["f1"], 0.987818, places=4)
+        self.assertEqual(f11["tp"], 444)
+        self.assertEqual(f11["tn"], 739)
+        self.assertEqual(f11["fp"], 0)
+        self.assertEqual(f11["fn"], 7)
+        self.assertAlmostEqual(f11["f1"], 0.992179, places=4)
 
         # File 12 (0 false alarms, incipient onset)
         f12 = per_file[12]
-        self.assertEqual(f12["tp"], 272)
+        self.assertEqual(f12["tp"], 278)
         self.assertEqual(f12["tn"], 739)
         self.assertEqual(f12["fp"], 0)
-        self.assertEqual(f12["fn"], 37)
+        self.assertEqual(f12["fn"], 31)
         self.assertAlmostEqual(f12["precision"], 1.0000, places=4)
         self.assertAlmostEqual(f12["fpr"], 0.0000, places=4)
-        self.assertAlmostEqual(f12["recall"], 0.880259, places=4)
+        self.assertAlmostEqual(f12["recall"], 0.899676, places=4)
 
         # File 13 (hydraulic startup shift)
         f13 = per_file[13]
-        self.assertEqual(f13["tp"], 257)
-        self.assertEqual(f13["tn"], 478)
-        self.assertEqual(f13["fp"], 180)
-        self.assertEqual(f13["fn"], 8)
-        self.assertAlmostEqual(f13["recall"], 0.969811, places=4)
-        self.assertAlmostEqual(f13["fpr"], 0.273556, places=4)
+        self.assertEqual(f13["tp"], 250)
+        self.assertEqual(f13["tn"], 646)
+        self.assertEqual(f13["fp"], 12)
+        self.assertEqual(f13["fn"], 15)
+        self.assertAlmostEqual(f13["recall"], 0.943396, places=4)
+        self.assertAlmostEqual(f13["fpr"], 0.018237, places=4)
 
         # File 14
         f14 = per_file[14]
-        self.assertEqual(f14["tp"], 295)
-        self.assertEqual(f14["tn"], 583)
-        self.assertEqual(f14["fp"], 20)
-        self.assertEqual(f14["fn"], 7)
-        self.assertAlmostEqual(f14["f1"], 0.956240, places=4)
+        self.assertEqual(f14["tp"], 293)
+        self.assertEqual(f14["tn"], 590)
+        self.assertEqual(f14["fp"], 13)
+        self.assertEqual(f14["fn"], 9)
+        self.assertAlmostEqual(f14["f1"], 0.963816, places=4)
 
     # =========================================================================
     # 5. Threshold Sensitivity & Calibration Monotonicity
@@ -392,13 +392,13 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
 
         self.assertEqual(rf_data["threshold"], self.threshold)
         self.assertEqual(rf_data["model_version"], self.model_version)
-        self.assertEqual(rf_data["overall_metrics"]["tp"], 1270)
-        self.assertEqual(rf_data["overall_metrics"]["tn"], 2533)
-        self.assertEqual(rf_data["overall_metrics"]["fp"], 206)
-        self.assertEqual(rf_data["overall_metrics"]["fn"], 57)
-        self.assertAlmostEqual(rf_data["overall_metrics"]["accuracy"], 0.935317, places=5)
-        self.assertAlmostEqual(rf_data["overall_metrics"]["recall"], 0.957046, places=5)
-        self.assertAlmostEqual(rf_data["overall_metrics"]["f1_score"], 0.906172, places=5)
+        self.assertEqual(rf_data["overall_metrics"]["tp"], 1265)
+        self.assertEqual(rf_data["overall_metrics"]["tn"], 2714)
+        self.assertEqual(rf_data["overall_metrics"]["fp"], 25)
+        self.assertEqual(rf_data["overall_metrics"]["fn"], 62)
+        self.assertAlmostEqual(rf_data["overall_metrics"]["accuracy"], 0.978603, places=5)
+        self.assertAlmostEqual(rf_data["overall_metrics"]["recall"], 0.953278, places=5)
+        self.assertAlmostEqual(rf_data["overall_metrics"]["f1_score"], 0.966756, places=5)
 
         # Check per_file_metrics.csv
         csv_path = REPORTS_DIR / "per_file_metrics.csv"
@@ -407,21 +407,21 @@ class TestAccuracyCalibrationAudit(unittest.TestCase):
         self.assertEqual(len(df_csv), 4)
 
         row11 = df_csv[df_csv["file_name"] == "other/11.csv"].iloc[0]
-        self.assertEqual(row11["tp"], 446)
-        self.assertEqual(row11["fp"], 6)
+        self.assertEqual(row11["tp"], 444)
+        self.assertEqual(row11["fp"], 0)
 
         row12 = df_csv[df_csv["file_name"] == "other/12.csv"].iloc[0]
-        self.assertEqual(row12["tp"], 272)
+        self.assertEqual(row12["tp"], 278)
         self.assertEqual(row12["fp"], 0)
-        self.assertEqual(row12["fn"], 37)
+        self.assertEqual(row12["fn"], 31)
 
         row13 = df_csv[df_csv["file_name"] == "other/13.csv"].iloc[0]
-        self.assertEqual(row13["tp"], 257)
-        self.assertEqual(row13["fp"], 180)
+        self.assertEqual(row13["tp"], 250)
+        self.assertEqual(row13["fp"], 12)
 
         row14 = df_csv[df_csv["file_name"] == "other/14.csv"].iloc[0]
-        self.assertEqual(row14["tp"], 295)
-        self.assertEqual(row14["fp"], 20)
+        self.assertEqual(row14["tp"], 293)
+        self.assertEqual(row14["fp"], 13)
 
         # Check threshold_validation.json
         tv_path = REPORTS_DIR / "threshold_validation.json"
@@ -581,11 +581,11 @@ def generate_accuracy_audit_reports() -> Dict[str, Any]:
             "training_manifest_path": "reports/training_manifest.json"
         },
         "score_drift_and_distribution_findings": [
-            "File 11: Near-perfect separation (Normal prob mean: 0.0305, Anomaly prob mean: 0.9168). F1: 98.78%.",
-            "File 12: Precision 100.0% (FP=0, FPR=0.0%). Incipient-fault lag causes 37 false negatives before signal crosses tau=0.33.",
-            "File 13: Normal baseline probability elevated (mean: 0.2312, p95: 0.5283) due to transient hydraulic startup dynamics, producing 180 false alarms (FPR: 27.36%). Reported transparently without artificial smoothing.",
-            "File 14: Strong separation (F1: 95.62%, Recall: 97.68%, FPR: 3.32%).",
-            "Aggregate: 93.53% accuracy, 95.70% recall, 90.62% F1-score across 4,066 held-out test points."
+            "File 11: Near-perfect separation (Normal prob mean: 0.0507, Anomaly prob mean: 0.9165). F1: 99.22%, FP=0.",
+            "File 12: Precision 100.0% (FP=0, FPR=0.0%). Incipient onset caught effectively with F1: 94.72% (Recall: 89.97%).",
+            "File 13: Causal startup state gating suppresses pre-startup flow surges, dropping FPR to 1.82% (FP=12 vs baseline 180). F1: 94.88%.",
+            "File 14: Strong separation (F1: 96.38%, Recall: 97.02%, FPR: 2.16%, FP=13).",
+            "Aggregate: 97.86% accuracy, 95.33% recall, 96.68% F1-score across 4,066 held-out test points."
         ]
     }
 

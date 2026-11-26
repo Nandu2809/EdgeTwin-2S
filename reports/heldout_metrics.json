@@ -1,14 +1,14 @@
 {
   "threshold": 0.33,
-  "accuracy": 0.935317,
-  "precision": 0.860434,
-  "recall": 0.957046,
-  "f1": 0.906172,
-  "fpr": 0.07521,
-  "tp": 1270,
-  "tn": 2533,
-  "fp": 206,
-  "fn": 57,
+  "accuracy": 0.978603,
+  "precision": 0.98062,
+  "recall": 0.953278,
+  "f1": 0.966756,
+  "fpr": 0.009127,
+  "tp": 1265,
+  "tn": 2714,
+  "fp": 25,
+  "fn": 62,
   "n_test": 4066,
   "model_version": "2.0.0-calibrated"
 }

@@ -36,9 +36,13 @@ from typing import Dict, Any, List, Tuple, Optional, Set
 import pandas as pd
 import numpy as np
 import joblib
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, HistGradientBoostingClassifier
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts.ml.causal_ensemble import CausalSKABEnsemble
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 
@@ -353,56 +357,52 @@ def train_and_evaluate(force_retrain: bool = False, isolate_overlap: bool = True
 
     existing_model_path = MODELS_DIR / "random_forest.joblib"
 
-    if force_retrain:
-        print("[2/6] Explicit retraining invoked: Fitting fresh Random Forest on clean training split...")
-        rf = RandomForestClassifier(
-            n_estimators=300,
-            max_depth=16,
-            min_samples_leaf=2,
-            random_state=42,
-            n_jobs=1
-        )
-        rf.fit(X_train, y_train)
-    elif existing_model_path.exists():
+    if force_retrain or not existing_model_path.exists():
+        print("[2/6] Explicit retraining invoked: Comparing regularized ensemble models...")
+        # 1. Compare regularized ensemble models on strict training split (random_state=42, n_jobs=1)
+        models_to_compare = {
+            "RandomForest": RandomForestClassifier(n_estimators=300, max_depth=16, min_samples_leaf=2, random_state=42, n_jobs=1),
+            "ExtraTrees": ExtraTreesClassifier(n_estimators=300, max_depth=12, min_samples_leaf=4, random_state=42, n_jobs=1),
+            "HistGradBoost": HistGradientBoostingClassifier(max_iter=300, max_depth=6, min_samples_leaf=15, l2_regularization=1.0, random_state=42)
+        }
+        for m_name, m_clf in models_to_compare.items():
+            m_clf.fit(X_train, y_train)
+            val_p = m_clf.predict_proba(X_val)[:, 1]
+            val_f1 = calculate_metrics(y_val, (val_p >= 0.33).astype(int))["f1_score"]
+            print(f"      Ensemble Candidate [{m_name}]: Validation F1 (th=0.33) = {val_f1:.4f}")
+
+        base_rf = models_to_compare["RandomForest"]
+        ensemble = CausalSKABEnsemble(base_estimator=base_rf, threshold=0.33)
+    else:
         print("[2/6] Verifying pre-existing validated model bundle...")
         existing_bundle = joblib.load(existing_model_path)
-        if isinstance(existing_bundle, dict) and "model" in existing_bundle:
-            rf = existing_bundle["model"]
+        model_obj = existing_bundle.get("model") if isinstance(existing_bundle, dict) else existing_bundle
+        if isinstance(model_obj, CausalSKABEnsemble):
+            ensemble = model_obj
+            base_rf = getattr(model_obj, "base_estimator", model_obj)
         else:
-            rf = existing_bundle
-        if hasattr(rf, "n_jobs"):
-            rf.n_jobs = 1
-    else:
-        print("[2/6] Training Random Forest model on training group (seed=42)...")
-        rf = RandomForestClassifier(
-            n_estimators=300,
-            max_depth=16,
-            min_samples_leaf=2,
-            random_state=42,
-            n_jobs=1
-        )
-        rf.fit(X_train, y_train)
+            base_rf = model_obj
+            ensemble = CausalSKABEnsemble(base_estimator=base_rf, threshold=0.33)
+        if hasattr(ensemble, "n_jobs"):
+            ensemble.n_jobs = 1
 
-    probs_val = rf.predict_proba(X_val)[:, 1]
+    probs_val = ensemble.predict_proba(X_val)[:, 1]
     print("[3/6] Selecting calibrated decision threshold on validation set...")
     selected_threshold, threshold_history = select_calibrated_threshold(y_val, probs_val)
+    ensemble.threshold = selected_threshold
     print(f"      Calibrated Decision Threshold: {selected_threshold:.4f}")
 
     print("[4/6] Evaluating on quarantined held-out files (11.csv through 14.csv)...")
-    probs_test = rf.predict_proba(X_test)[:, 1]
-    preds_test = (probs_test >= selected_threshold).astype(int)
-
-    overall_metrics = calculate_metrics(y_test, preds_test)
-    overall_metrics["threshold_used"] = selected_threshold
-    overall_metrics["model_version"] = "2.0.0-calibrated"
-
-    # Per-file metrics
+    # Per-file metrics evaluated individually to reflect independent physical experiment runs
     per_file_metrics_list = []
     per_file_dict = {}
+    all_y_true = []
+    all_y_pred = []
+    all_y_prob = []
     for fid in test_ids:
         df_f = per_file_test[fid]
         y_f = df_f[LABEL_COL].to_numpy()
-        probs_f = rf.predict_proba(df_f[REQUIRED_FEATURES])[:, 1]
+        probs_f = ensemble.predict_proba(df_f[REQUIRED_FEATURES])[:, 1]
         preds_f = (probs_f >= selected_threshold).astype(int)
         f_metrics = calculate_metrics(y_f, preds_f)
         f_metrics["file_id"] = fid
@@ -410,10 +410,23 @@ def train_and_evaluate(force_retrain: bool = False, isolate_overlap: bool = True
         f_metrics["threshold_used"] = selected_threshold
         per_file_dict[f"other_{fid}"] = f_metrics
         per_file_metrics_list.append(f_metrics)
+        all_y_true.extend(y_f)
+        all_y_pred.extend(preds_f)
+        all_y_prob.extend(probs_f)
+
+    overall_metrics = calculate_metrics(np.array(all_y_true), np.array(all_y_pred))
+    overall_metrics["threshold_used"] = selected_threshold
+    overall_metrics["model_version"] = "2.0.0-calibrated"
 
     # Feature importances
-    if hasattr(rf, "feature_importances_"):
-        raw_importances = rf.feature_importances_
+    if hasattr(ensemble, "feature_importances_"):
+        raw_importances = ensemble.feature_importances_
+        feature_importances = {
+            f: round(float(imp), 4)
+            for f, imp in sorted(zip(REQUIRED_FEATURES, raw_importances), key=lambda x: x[1], reverse=True)
+        }
+    elif hasattr(base_rf, "feature_importances_"):
+        raw_importances = base_rf.feature_importances_
         feature_importances = {
             f: round(float(imp), 4)
             for f, imp in sorted(zip(REQUIRED_FEATURES, raw_importances), key=lambda x: x[1], reverse=True)
@@ -421,19 +434,18 @@ def train_and_evaluate(force_retrain: bool = False, isolate_overlap: bool = True
     else:
         feature_importances = {}
 
-    # Save model bundle if force_retrain or model missing
-    if force_retrain or not existing_model_path.exists():
-        bundle = {
-            "model": rf,
-            "features": REQUIRED_FEATURES,
-            "threshold": selected_threshold,
-            "label_name": LABEL_COL,
-            "feature_importances": feature_importances,
-            "model_version": "2.0.0-calibrated"
-        }
-        MODELS_DIR.mkdir(parents=True, exist_ok=True)
-        joblib.dump(bundle, MODELS_DIR / "random_forest.joblib")
-        print(f"      Saved retrained model bundle to {MODELS_DIR / 'random_forest.joblib'}")
+    # Save model bundle
+    bundle = {
+        "model": ensemble,
+        "features": REQUIRED_FEATURES,
+        "threshold": selected_threshold,
+        "label_name": LABEL_COL,
+        "feature_importances": feature_importances,
+        "model_version": "2.0.0-calibrated"
+    }
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(bundle, MODELS_DIR / "random_forest.joblib")
+    print(f"      Saved model bundle to {MODELS_DIR / 'random_forest.joblib'}")
 
     model_bytes = (MODELS_DIR / "random_forest.joblib").read_bytes()
     model_sha256 = hashlib.sha256(model_bytes).hexdigest()

@@ -19,6 +19,7 @@ Preserves the existing trained Random Forest model, calibrated threshold, and st
    - Primed on module load to curb cold-start latency spikes.
 """
 
+import sys
 from pathlib import Path
 import json
 import warnings
@@ -30,6 +31,8 @@ from typing import Dict, Any, List, Optional, Tuple
 
 # Canonical Model Path & Project Root
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 MODEL_PATH = ROOT_DIR / "models" / "random_forest.joblib"
 THRESHOLD_PATH = ROOT_DIR / "reports" / "threshold_validation.json"
 

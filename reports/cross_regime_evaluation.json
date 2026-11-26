@@ -1,6 +1,6 @@
 {
   "report_name": "EdgeSentinel SKAB Cross-Regime Generalization & Regime Handling Audit",
-  "timestamp": "2026-11-25T23:44:02.442028",
+  "timestamp": "2026-11-26T19:35:24.474317",
   "model_version": "2.0.0-calibrated",
   "decision_threshold": 0.33,
   "regime_evaluations": {
@@ -12,16 +12,16 @@
         "n_anomalies": 1327,
         "n_normal": 2739,
         "anomaly_ratio": 0.3264,
-        "tp": 1270,
-        "tn": 2533,
-        "fp": 206,
-        "fn": 57,
-        "accuracy": 0.935317,
-        "precision": 0.860434,
-        "recall": 0.957046,
-        "f1_score": 0.906172,
-        "false_positive_rate": 0.07521,
-        "specificity": 0.92479,
+        "tp": 1265,
+        "tn": 2714,
+        "fp": 25,
+        "fn": 62,
+        "accuracy": 0.978603,
+        "precision": 0.98062,
+        "recall": 0.953278,
+        "f1_score": 0.966756,
+        "false_positive_rate": 0.009127,
+        "specificity": 0.990873,
         "threshold_used": 0.33,
         "model_version": "2.0.0-calibrated",
         "model_features": [
@@ -88,17 +88,17 @@
         "n_anomalies": 6309,
         "n_normal": 11851,
         "anomaly_ratio": 0.3474,
-        "tp": 6309,
-        "tn": 0,
-        "fp": 11851,
-        "fn": 0,
-        "accuracy": 0.347412,
-        "precision": 0.347412,
-        "recall": 1.0,
-        "f1_score": 0.515673,
-        "false_positive_rate": 1.0,
-        "specificity": 0.0,
-        "mean_probability": 0.6324
+        "tp": 0,
+        "tn": 11851,
+        "fp": 0,
+        "fn": 6309,
+        "accuracy": 0.652588,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "false_positive_rate": 0.0,
+        "specificity": 1.0,
+        "mean_probability": 0.15
       },
       "regime_aware_adapted_metrics": {
         "n_samples": 18160,
@@ -121,14 +121,14 @@
         "n_anomalies": 6309,
         "n_normal": 11851,
         "anomaly_ratio": 0.3474,
-        "tp": 0,
+        "tp": 1838,
         "tn": 11851,
         "fp": 0,
-        "fn": 6309,
-        "accuracy": 0.652588,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
+        "fn": 4471,
+        "accuracy": 0.7538,
+        "precision": 1.0,
+        "recall": 0.29133,
+        "f1_score": 0.451209,
         "false_positive_rate": 0.0,
         "specificity": 1.0
       },
@@ -406,7 +406,7 @@
           "specificity": 0.643432
         }
       },
-      "findings": "Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 100.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=85.92%, Precision=56.89%, F1=68.46%, FPR=34.66% across 18,160 samples."
+      "findings": "Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 0.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=85.92%, Precision=56.89%, F1=68.46%, FPR=34.66% across 18,160 samples."
     },
     "valve2": {
       "regime_name": "valve2 (hydraulic throttling operating regime)",
@@ -416,17 +416,17 @@
         "n_anomalies": 1517,
         "n_normal": 2795,
         "anomaly_ratio": 0.3518,
-        "tp": 1517,
-        "tn": 0,
-        "fp": 2795,
-        "fn": 0,
-        "accuracy": 0.351809,
-        "precision": 0.351809,
-        "recall": 1.0,
-        "f1_score": 0.520501,
-        "false_positive_rate": 1.0,
-        "specificity": 0.0,
-        "mean_probability": 0.6332
+        "tp": 0,
+        "tn": 2795,
+        "fp": 0,
+        "fn": 1517,
+        "accuracy": 0.648191,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "false_positive_rate": 0.0,
+        "specificity": 1.0,
+        "mean_probability": 0.15
       },
       "regime_aware_adapted_metrics": {
         "n_samples": 4312,
@@ -449,14 +449,14 @@
         "n_anomalies": 1517,
         "n_normal": 2795,
         "anomaly_ratio": 0.3518,
-        "tp": 0,
+        "tp": 116,
         "tn": 2795,
         "fp": 0,
-        "fn": 1517,
-        "accuracy": 0.648191,
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0,
+        "fn": 1401,
+        "accuracy": 0.675093,
+        "precision": 1.0,
+        "recall": 0.076467,
+        "f1_score": 0.14207,
         "false_positive_rate": 0.0,
         "specificity": 1.0
       },
@@ -542,7 +542,7 @@
           "specificity": 0.955
         }
       },
-      "findings": "Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 100.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=64.93%, Precision=61.52%, F1=63.18%, FPR=22.04% across 4,312 samples."
+      "findings": "Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 0.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=64.93%, Precision=61.52%, F1=63.18%, FPR=22.04% across 4,312 samples."
     }
   },
   "engineering_conclusions": [

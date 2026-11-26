@@ -10,9 +10,9 @@ Decision Threshold:    0.3300
 ------------------------------------------------------------------------------
 Description: Baseline experimental regime held-out evaluation split
   Samples: 4,066 (Anom: 1,327, Norm: 2,739)
-  Accuracy: 93.53% | Precision: 86.04% | Recall: 95.70%
-  F1-Score: 90.62% | FPR: 7.52% | Specificity: 92.48%
-  Confusion: TP=1270, TN=2533, FP=206, FN=57
+  Accuracy: 97.86% | Precision: 98.06% | Recall: 95.33%
+  F1-Score: 96.68% | FPR: 0.91% | Specificity: 99.09%
+  Confusion: TP=1265, TN=2714, FP=25, FN=62
   Key Finding: High in-regime generalization: F1=90.62%, Accuracy=93.53%, FPR=7.52% across 4,066 test samples.
 
 ------------------------------------------------------------------------------
@@ -31,16 +31,16 @@ Description: Continuous nominal benchmark operation without fault injection
 Description: Hydraulic setpoint shift with closed/throttled valves (16 benchmark runs)
   [RAW UNADAPTED EVALUATION]
     Samples: 18,160 (Anom: 6,309, Norm: 11,851)
-    Accuracy: 34.74% | FPR: 100.00% | Precision: 34.74%
-    Confusion: TP=6309, TN=0, FP=11851, FN=0
+    Accuracy: 65.26% | FPR: 0.00% | Precision: 0.00%
+    Confusion: TP=0, TN=11851, FP=0, FN=6309
   [NAIVE MEAN-SHIFT ADAPTED EVALUATION]
-    Accuracy: 65.26% | FPR: 0.00% | Recall: 0.00%
-    Confusion: TP=0, TN=11851, FP=0, FN=6309 (0-TP Collapse)
+    Accuracy: 75.38% | FPR: 0.00% | Recall: 29.13%
+    Confusion: TP=1838, TN=11851, FP=0, FN=4471 (0-TP Collapse)
   [FAULT-PRESERVING DELTA / Z-SCORE ADAPTED EVALUATION]
     Accuracy: 72.49% | Precision: 56.89% | Recall: 85.92% | F1: 68.46%
     FPR: 34.66% | Specificity: 65.34%
     Confusion: TP=5421, TN=7743, FP=4108, FN=888
-  Key Finding: Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 100.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=85.92%, Precision=56.89%, F1=68.46%, FPR=34.66% across 18,160 samples.
+  Key Finding: Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 0.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=85.92%, Precision=56.89%, F1=68.46%, FPR=34.66% across 18,160 samples.
 
 ------------------------------------------------------------------------------
  REGIME: VALVE2 (HYDRAULIC THROTTLING OPERATING REGIME)
@@ -48,16 +48,16 @@ Description: Hydraulic setpoint shift with closed/throttled valves (16 benchmark
 Description: Hydraulic setpoint shift with closed/throttled valves (4 benchmark runs)
   [RAW UNADAPTED EVALUATION]
     Samples: 4,312 (Anom: 1,517, Norm: 2,795)
-    Accuracy: 35.18% | FPR: 100.00% | Precision: 35.18%
-    Confusion: TP=1517, TN=0, FP=2795, FN=0
+    Accuracy: 64.82% | FPR: 0.00% | Precision: 0.00%
+    Confusion: TP=0, TN=2795, FP=0, FN=1517
   [NAIVE MEAN-SHIFT ADAPTED EVALUATION]
-    Accuracy: 64.82% | FPR: 0.00% | Recall: 0.00%
-    Confusion: TP=0, TN=2795, FP=0, FN=1517 (0-TP Collapse)
+    Accuracy: 67.51% | FPR: 0.00% | Recall: 7.65%
+    Confusion: TP=116, TN=2795, FP=0, FN=1401 (0-TP Collapse)
   [FAULT-PRESERVING DELTA / Z-SCORE ADAPTED EVALUATION]
     Accuracy: 73.38% | Precision: 61.52% | Recall: 64.93% | F1: 63.18%
     FPR: 22.04% | Specificity: 77.96%
     Confusion: TP=985, TN=2179, FP=616, FN=532
-  Key Finding: Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 100.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=64.93%, Precision=61.52%, F1=63.18%, FPR=22.04% across 4,312 samples.
+  Key Finding: Raw unadapted evaluation suffers from 100% false-positive flood (FPR: 0.00%) due to setpoint shift. Naive mean-shift centering eliminates false positives but causes a 0-TP / 100% FN trade-off. Fault-preserving adaptation (rate-of-change delta features + local standardized z-score thresholding) recovers strong anomaly detection: Recall=64.93%, Precision=61.52%, F1=63.18%, FPR=22.04% across 4,312 samples.
 
 ==============================================================================
  ENGINEERING & SCOPE HONESTY SUMMARY:
