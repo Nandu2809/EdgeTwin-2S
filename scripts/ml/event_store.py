@@ -186,7 +186,16 @@ class EventStore:
                 """).fetchall()
                 for r in rows:
                     writer.writerow([r[col] for col in CSV_FIELDNAMES])
-            temp_csv.replace(self.persistence_csv)
+            replaced = False
+            for _ in range(5):
+                try:
+                    temp_csv.replace(self.persistence_csv)
+                    replaced = True
+                    break
+                except PermissionError:
+                    time.sleep(0.03)
+            if not replaced:
+                temp_csv.replace(self.persistence_csv)
         except Exception as e:
             if temp_csv.exists():
                 try:
@@ -388,7 +397,16 @@ class EventStore:
                     if eid in acked_ids:
                         row["ack_status"] = "ACK"
                     writer.writerow(row)
-            temp_path.replace(self.persistence_csv)
+            replaced = False
+            for _ in range(5):
+                try:
+                    temp_path.replace(self.persistence_csv)
+                    replaced = True
+                    break
+                except PermissionError:
+                    time.sleep(0.03)
+            if not replaced:
+                temp_path.replace(self.persistence_csv)
         except Exception as e:
             if temp_path.exists():
                 try:

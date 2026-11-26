@@ -52,8 +52,8 @@ zones = struct('motor', false, 'motor_warn', false, 'lp', false, 'lp_warn', fals
 
 % Evaluate specific condition:
 % Reserve SENSOR_FAULT strictly for non-finite or impossible electrical transducer fault codes (-99.9 or negative).
-hp_bad = ~isfinite(tel.p_hp_bar) || (tel.p_hp_bar < -50) || isnan(tel.p_hp_bar);
-gen_sensor_bad = ~isfinite(tel.p_lp_bar) || ~isfinite(tel.t_ic_c) || ~isfinite(tel.rpm) || ...
+hp_bad = ~is_valid(2) || ~isfinite(tel.p_hp_bar) || (tel.p_hp_bar < -50) || isnan(tel.p_hp_bar);
+gen_sensor_bad = any(~is_valid([1 3 4])) || ~isfinite(tel.p_lp_bar) || ~isfinite(tel.t_ic_c) || ~isfinite(tel.rpm) || ...
                  (tel.p_lp_bar < 0) || (tel.t_ic_c < -50) || (tel.rpm < 0);
 
 is_temp_bad = isfinite(tel.t_ic_c) && (tel.t_ic_c > t_ic_lim);

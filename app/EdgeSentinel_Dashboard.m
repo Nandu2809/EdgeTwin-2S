@@ -43,7 +43,6 @@ cBorder    = [0.245 0.290 0.355]; % Subtle divider / border
 
 cTextMain  = [0.875 0.902 0.933]; % Soft off-white primary text
 cTextMuted = [0.640 0.695 0.760]; % Muted slate secondary text
-cTextDim   = [0.520 0.575 0.645]; % Quiet label text
 
 cSteel     = [0.460 0.640 0.790]; % Muted steel blue accent
 cSage      = [0.440 0.680 0.550]; % Calm nominal/healthy sage
@@ -154,7 +153,7 @@ presetItems = {'-- Select Combination Preset --', ...
     '7. Fault: Transducer Broken/Open (-99.9)', ...
     '8. Fault: Transducer Missing (NaN)', ...
     '9. Reset to Nominal Baseline'};
-ddCustomPresets = uidropdown(pnlCustom, 'Position', [54 118 234 22], 'Items', presetItems, 'Value', presetItems{1}, ...
+uidropdown(pnlCustom, 'Position', [54 118 234 22], 'Items', presetItems, 'Value', presetItems{1}, ...
     'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9, 'ValueChangedFcn', @onPresetSelected);
 
 % 6 Sensor Fields (2 columns)
@@ -162,7 +161,7 @@ uilabel(pnlCustom, 'Position', [6 93 48 18], 'Text', 'T_ic(°C):', 'FontSize', 9
 efCustomTic = uieditfield(pnlCustom, 'numeric', 'Position', [56 92 80 20], 'Value', 86.0, 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5);
 
 uilabel(pnlCustom, 'Position', [6 69 48 18], 'Text', 'P_hp(bar):', 'FontSize', 9, 'FontColor', cTextMuted);
-efCustomPhp = uieditfield(pnlCustom, 'numeric', 'Position', [56 68 80 20], 'Value', 8.10, 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5);
+efCustomPhp = uieditfield(pnlCustom, 'text', 'Position', [56 68 80 20], 'Value', '8.10', 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5);
 
 uilabel(pnlCustom, 'Position', [6 45 48 18], 'Text', 'P_lp(bar):', 'FontSize', 9, 'FontColor', cTextMuted);
 efCustomPlp = uieditfield(pnlCustom, 'numeric', 'Position', [56 44 80 20], 'Value', 2.35, 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5);
@@ -177,30 +176,30 @@ uilabel(pnlCustom, 'Position', [144 45 46 18], 'Text', 'Curr(A):', 'FontSize', 9
 efCustomCurr = uieditfield(pnlCustom, 'numeric', 'Position', [192 44 94 20], 'Value', 24.2, 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5);
 
 % Quick fault buttons (muted crimson-slate)
-btnFaultNeg99 = uibutton(pnlCustom, 'push', 'Position', [6 23 138 19], 'Text', 'Set HP: -99.9 (Fault)', 'FontSize', 8.5, ...
+uibutton(pnlCustom, 'push', 'Position', [6 23 138 19], 'Text', 'Set HP: -99.9 (Fault)', 'FontSize', 8.5, ...
     'BackgroundColor', [0.33 0.19 0.21], 'FontColor', cTextMain, 'ButtonPushedFcn', @(~,~) applyQuickFault(-99.9));
-btnFaultNaN   = uibutton(pnlCustom, 'push', 'Position', [148 23 140 19], 'Text', 'Set HP: NaN (Fault)', 'FontSize', 8.5, ...
+uibutton(pnlCustom, 'push', 'Position', [148 23 140 19], 'Text', 'Set HP: NaN (Fault)', 'FontSize', 8.5, ...
     'BackgroundColor', [0.33 0.19 0.21], 'FontColor', cTextMain, 'ButtonPushedFcn', @(~,~) applyQuickFault(NaN));
 
 % Action buttons (muted steel & bronze-slate)
-btnInjectCustom = uibutton(pnlCustom, 'push', 'Position', [6 2 138 20], 'Text', 'Inject Custom Values', 'FontSize', 8.5, 'FontWeight', 'bold', ...
+uibutton(pnlCustom, 'push', 'Position', [6 2 138 20], 'Text', 'Inject Custom Values', 'FontSize', 8.5, 'FontWeight', 'bold', ...
     'BackgroundColor', [0.22 0.37 0.50], 'FontColor', cTextMain, 'ButtonPushedFcn', @(~,~) onApplyCustom());
-btnRandomMix    = uibutton(pnlCustom, 'push', 'Position', [148 2 140 20], 'Text', 'Random Mix Generator', 'FontSize', 8.5, 'FontWeight', 'bold', ...
+uibutton(pnlCustom, 'push', 'Position', [148 2 140 20], 'Text', 'Random Mix Generator', 'FontSize', 8.5, 'FontWeight', 'bold', ...
     'BackgroundColor', [0.42 0.31 0.18], 'FontColor', cTextMain, 'ButtonPushedFcn', @(~,~) onRandomMix());
 
 % Stream transport buttons (restrained industrial tones)
-btnStart = uibutton(simPanel, 'push', 'Position', [8   134 90 26], 'Text', 'Start Stream', 'BackgroundColor', [0.20 0.38 0.30], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onStart);
-btnStop  = uibutton(simPanel, 'push', 'Position', [102 134 90 26], 'Text', 'Pause',        'BackgroundColor', [0.40 0.31 0.18], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onPause);
-btnStep  = uibutton(simPanel, 'push', 'Position', [196 134 90 26], 'Text', 'Step Once',    'BackgroundColor', [0.22 0.34 0.46], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onSingleStep);
+uibutton(simPanel, 'push', 'Position', [8   134 90 26], 'Text', 'Start Stream', 'BackgroundColor', [0.20 0.38 0.30], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onStart);
+uibutton(simPanel, 'push', 'Position', [102 134 90 26], 'Text', 'Pause',        'BackgroundColor', [0.40 0.31 0.18], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onPause);
+uibutton(simPanel, 'push', 'Position', [196 134 90 26], 'Text', 'Step Once',    'BackgroundColor', [0.22 0.34 0.46], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onSingleStep);
 
 uilabel(simPanel, 'Position', [8 104 54 20], 'Text', 'Step (s):', 'FontSize', 9.5, 'FontColor', cTextMuted);
-efPeriod = uieditfield(simPanel, 'numeric', 'Position', [64 103 48 22], 'Value', 0.35, 'Limits', [0.1 10], 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5, 'ValueChangedFcn', @onPeriodChanged);
+uieditfield(simPanel, 'numeric', 'Position', [64 103 48 22], 'Value', 0.35, 'Limits', [0.1 10], 'BackgroundColor', cSub, 'FontColor', cTextMain, 'FontSize', 9.5, 'ValueChangedFcn', @onPeriodChanged);
 lblPistonPos = uilabel(simPanel, 'Position', [118 101 178 26], 'Text', 'LP: +0.0mm | HP: +0.0mm  (t = 0.00s)', 'FontColor', cTextMuted, 'FontSize', 9.5);
 
 lblRecAct = uilabel(simPanel, 'Position', [8 44 288 52], 'Text', 'RECOMMENDED ACTUATOR: NONE' + nl + 'Machine operating within normal limits.', ...
     'FontColor', cSage, 'FontSize', 10, 'FontWeight', 'bold', 'WordWrap', 'on', 'VerticalAlignment', 'top');
-btnExecRec = uibutton(simPanel, 'push', 'Position', [8 8 138 30], 'Text', 'Execute Rec. Action', 'BackgroundColor', [0.22 0.36 0.48], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @(~,~) sendCommand(state.rec_action));
-btnExportCsv = uibutton(simPanel, 'push', 'Position', [152 8 138 30], 'Text', 'Export CSV Log', 'BackgroundColor', [0.22 0.35 0.34], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onExportCsv);
+uibutton(simPanel, 'push', 'Position', [8 8 138 30], 'Text', 'Execute Rec. Action', 'BackgroundColor', [0.22 0.36 0.48], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @(~,~) sendCommand(state.rec_action));
+uibutton(simPanel, 'push', 'Position', [152 8 138 30], 'Text', 'Export CSV Log', 'BackgroundColor', [0.22 0.35 0.34], 'FontColor', cTextMain, 'FontSize', 10, 'FontWeight', 'bold', 'ButtonPushedFcn', @onExportCsv);
 
 % --- COLUMN 1 LOWER: SUPERVISORY ACTUATORS & ACK LOG ---
 actPanel = uipanel(rootScroll, 'Title', 'Supervisory Actuators & ACK Log', 'Position', [10 10 310 334], ...
@@ -461,35 +460,58 @@ stepAndRender(false);
     function onTsInfo(~, ~)
         flushThingSpeak(false);
     end
+    function val = getPhpCustomVal()
+        raw = efCustomPhp.Value;
+        if ischar(raw) || isstring(raw)
+            val = str2double(strtrim(char(raw)));
+        elseif isnumeric(raw)
+            val = double(raw);
+        else
+            val = NaN;
+        end
+    end
+
+    function setPhpCustomVal(val)
+        if isnumeric(val) && isnan(val)
+            efCustomPhp.Value = 'NaN';
+        elseif isnumeric(val)
+            efCustomPhp.Value = sprintf('%.2f', double(val));
+        elseif ischar(val) || isstring(val)
+            efCustomPhp.Value = char(val);
+        else
+            efCustomPhp.Value = 'NaN';
+        end
+    end
+
     function onPresetSelected(src, ~)
         val = src.Value;
         switch val
             case '1. High Temp Overheat (2000°C Thermal Runaway)'
-                efCustomTic.Value  = 2000.0; efCustomPhp.Value  = 8.10;  efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 2000.0; setPhpCustomVal(8.10);  efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1485;   efCustomVib.Value  = 1.85;  efCustomCurr.Value = 24.2;
             case '2. Compound: High Temp (165°C) + High Press (12.8 bar)'
-                efCustomTic.Value  = 165.0;  efCustomPhp.Value  = 12.80; efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 165.0;  setPhpCustomVal(12.80); efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1485;   efCustomVib.Value  = 2.40;  efCustomCurr.Value = 32.5;
             case '3. Compound: High Vib (8.4 mm/s) + Overspeed (1980 RPM)'
-                efCustomTic.Value  = 92.0;   efCustomPhp.Value  = 8.90;  efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 92.0;   setPhpCustomVal(8.90);  efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1980;   efCustomVib.Value  = 8.40;  efCustomCurr.Value = 30.0;
             case '4. Compound: Valve Leak (Ratio 1.19) + Hot Recirc'
-                efCustomTic.Value  = 124.5;  efCustomPhp.Value  = 4.60;  efCustomPlp.Value  = 3.85;
+                efCustomTic.Value  = 124.5;  setPhpCustomVal(4.60);  efCustomPlp.Value  = 3.85;
                 efCustomRpm.Value  = 1480;   efCustomVib.Value  = 3.80;  efCustomCurr.Value = 25.0;
             case '5. Extreme: 4-Way Overload (Temp+Press+Vib+Speed)'
-                efCustomTic.Value  = 172.0;  efCustomPhp.Value  = 13.10; efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 172.0;  setPhpCustomVal(13.10); efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1980;   efCustomVib.Value  = 8.80;  efCustomCurr.Value = 37.0;
             case '6. Marginal: Near Prototype Thresholds (132°C / 10.4 bar)'
-                efCustomTic.Value  = 132.0;  efCustomPhp.Value  = 10.35; efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 132.0;  setPhpCustomVal(10.35); efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1640;   efCustomVib.Value  = 4.40;  efCustomCurr.Value = 26.5;
             case '7. Fault: Transducer Broken/Open (-99.9)'
-                efCustomTic.Value  = 86.0;   efCustomPhp.Value  = -99.9; efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 86.0;   setPhpCustomVal(-99.9); efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1485;   efCustomVib.Value  = 1.85;  efCustomCurr.Value = 24.2;
             case '8. Fault: Transducer Missing (NaN)'
-                efCustomTic.Value  = 86.0;   efCustomPhp.Value  = NaN;   efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 86.0;   setPhpCustomVal(NaN);   efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1485;   efCustomVib.Value  = 1.85;  efCustomCurr.Value = 24.2;
             case '9. Reset to Nominal Baseline'
-                efCustomTic.Value  = 86.0;   efCustomPhp.Value  = 8.10;  efCustomPlp.Value  = 2.35;
+                efCustomTic.Value  = 86.0;   setPhpCustomVal(8.10);  efCustomPlp.Value  = 2.35;
                 efCustomRpm.Value  = 1485;   efCustomVib.Value  = 1.85;  efCustomCurr.Value = 24.2;
             otherwise
                 return;
@@ -497,7 +519,7 @@ stepAndRender(false);
         onApplyCustom();
     end
     function applyQuickFault(faultVal)
-        efCustomPhp.Value = faultVal;
+        setPhpCustomVal(faultVal);
         onApplyCustom();
     end
     function onRandomMix(~, ~)
@@ -518,7 +540,7 @@ stepAndRender(false);
             end
         end
         efCustomTic.Value  = round(t_ic, 1);
-        efCustomPhp.Value  = round(p_hp, 2);
+        setPhpCustomVal(round(p_hp, 2));
         efCustomPlp.Value  = round(p_lp, 2);
         efCustomRpm.Value  = round(rpm, 0);
         efCustomVib.Value  = round(vib, 2);
@@ -527,7 +549,7 @@ stepAndRender(false);
     end
     function onApplyCustom(~, ~)
         state.custom_sensors.t_ic_c    = efCustomTic.Value;
-        state.custom_sensors.p_hp_bar  = efCustomPhp.Value;
+        state.custom_sensors.p_hp_bar  = getPhpCustomVal();
         state.custom_sensors.p_lp_bar  = efCustomPlp.Value;
         state.custom_sensors.rpm       = efCustomRpm.Value;
         state.custom_sensors.vib_mm_s  = efCustomVib.Value;
@@ -543,7 +565,7 @@ stepAndRender(false);
         if ~isfield(state, 'last_tel') || isempty(state.last_tel), return; end
         lt = state.last_tel;
         if isfield(lt, 't_ic_c') && isfinite(lt.t_ic_c),       efCustomTic.Value  = round(lt.t_ic_c, 1); end
-        if isfield(lt, 'p_hp_bar'),                            efCustomPhp.Value  = round(lt.p_hp_bar, 2); end
+        if isfield(lt, 'p_hp_bar'),                            setPhpCustomVal(round(lt.p_hp_bar, 2)); end
         if isfield(lt, 'p_lp_bar') && isfinite(lt.p_lp_bar),     efCustomPlp.Value  = round(lt.p_lp_bar, 2); end
         if isfield(lt, 'rpm') && isfinite(lt.rpm),               efCustomRpm.Value  = round(lt.rpm, 0); end
         if isfield(lt, 'vib_mm_s') && isfinite(lt.vib_mm_s),     efCustomVib.Value  = round(lt.vib_mm_s, 2); end
@@ -670,7 +692,7 @@ stepAndRender(false);
                            sprintf('Fb  [Stop Unld Fan Drn Trim]: [%d %d %d %d %d]', state.act_fb);
         if isfield(state, 'last_tel') && ~isempty(state.last_tel)
             lt = state.last_tel;
-            appendPersistentStore(datestr(nowDt, 'yyyy-mm-dd HH:MM:SS.FFF'), cid, state.scenario, '2.0.0', ...
+            appendPersistentStore(char(datetime(nowDt, 'Format', 'yyyy-MM-dd HH:mm:ss.SSS')), cid, state.scenario, '2.0.0', ...
                 lt.p_hp_bar, lt.t_ic_c, lt.rpm, lt.vib_mm_s, lt.current_a, 0.0, ...
                 sprintf('ACTUATOR_%s', actionName), 'ACK');
         end
@@ -985,7 +1007,7 @@ stepAndRender(false);
 
         if isfield(state, 'inspect_t') && ~isempty(state.inspect_t) && isfinite(state.inspect_t) && ...
            state.inspect_t >= min(state.history_t) && state.inspect_t <= max(state.history_t)
-            try, xline(ax1, state.inspect_t, '--', 'Color', cAmber, 'LineWidth', 1.5, 'HitTest', 'off', 'HandleVisibility', 'off'); catch, end
+            try xline(ax1, state.inspect_t, '--', 'Color', cAmber, 'LineWidth', 1.5, 'HitTest', 'off', 'HandleVisibility', 'off'); catch; end
         end
 
         try
@@ -1067,7 +1089,7 @@ stepAndRender(false);
 
         if isfield(state, 'inspect_t') && ~isempty(state.inspect_t) && isfinite(state.inspect_t) && ...
            state.inspect_t >= min(state.history_t) && state.inspect_t <= max(state.history_t)
-            try, xline(ax2, state.inspect_t, '--', 'Color', cAmber, 'LineWidth', 1.5, 'HitTest', 'off', 'HandleVisibility', 'off'); catch, end
+            try xline(ax2, state.inspect_t, '--', 'Color', cAmber, 'LineWidth', 1.5, 'HitTest', 'off', 'HandleVisibility', 'off'); catch; end
         end
 
         try
@@ -1121,7 +1143,7 @@ stepAndRender(false);
         if isvalid(lblTsStatus), lblTsStatus.Text = txt; end
     end
     function onClose(~, ~)
-        try, if strcmp(tmr.Running, 'on'), stop(tmr); end, delete(tmr); catch, end
+        try if strcmp(tmr.Running, 'on'), stop(tmr); end; delete(tmr); catch; end
         if isvalid(fig), delete(fig); end
     end
 end
@@ -1300,8 +1322,8 @@ advisoryStr = 'SIMULATED SCADA-HMI ADVISORY: Digital-twin heuristics for demonst
 
 zones = struct('motor', false, 'motor_warn', false, 'lp', false, 'lp_warn', false, 'ic', false, 'ic_warn', false, 'hp', false, 'hp_warn', false);
 
-hp_bad = ~isfinite(tel.p_hp_bar) || (tel.p_hp_bar < -50) || isnan(tel.p_hp_bar);
-gen_sensor_bad = ~isfinite(tel.p_lp_bar) || ~isfinite(tel.t_ic_c) || ~isfinite(tel.rpm) || ...
+hp_bad = ~is_valid(2) || ~isfinite(tel.p_hp_bar) || (tel.p_hp_bar < -50) || isnan(tel.p_hp_bar);
+gen_sensor_bad = any(~is_valid([1 3 4])) || ~isfinite(tel.p_lp_bar) || ~isfinite(tel.t_ic_c) || ~isfinite(tel.rpm) || ...
                  (tel.p_lp_bar < 0) || (tel.t_ic_c < -50) || (tel.rpm < 0);
 
 is_temp_bad  = isfinite(tel.t_ic_c)   && (tel.t_ic_c > t_ic_lim);
@@ -1315,14 +1337,14 @@ numFaults = is_temp_bad + is_press_bad + is_speed_bad + is_vib_bad + is_leak_bad
 
 if hp_bad
     zones.hp = true; healthTxt = '● STATUS: SENSOR FAULT (HP)'; healthCol = cCrimson; recAct = 'RESET';
-    recBanner = string('RECOMMENDED ACTUATOR: RESET / QUARANTINE') + nl + string('HP signal out-of-range (-99.9 bar or NaN). Quarantine & check sensor.');
+    recBanner = "RECOMMENDED ACTUATOR: RESET / QUARANTINE" + nl + "HP signal out-of-range (-99.9 bar or NaN). Quarantine & check sensor.";
     recColor = cCrimson; partStr = sprintf('HP Pressure Transducer / Signal Path\n4-20mA Sensor Loop, Wiring Harness & ADC Input');
     impactStr = 'Corrupted or missing telemetry stream (-99.9 bar or NaN). Closed-loop supervisory control blinded to HP discharge; stage ratio calculation corrupted.';
     fixStr = 'Quarantine HP transducer channel; switch to fail-safe manual monitoring and inspect sensor wiring.';
 
 elseif gen_sensor_bad
     zones.hp_warn = true; healthTxt = '● STATUS: SENSOR FAULT (CORRUPT/NEGATIVE)'; healthCol = cCrimson; recAct = 'RESET';
-    recBanner = string('RECOMMENDED ACTUATOR: RESET / QUARANTINE') + nl + string('Sensor signal non-finite or impossible electrical code. Quarantine channel.');
+    recBanner = "RECOMMENDED ACTUATOR: RESET / QUARANTINE" + nl + "Sensor signal non-finite or impossible electrical code. Quarantine channel.";
     recColor = cCrimson; partStr = sprintf('Telemetry Transducer / Signal Interface\nAnalog Channel Conditioning & Wiring Harness');
     impactStr = 'Non-finite or out-of-range electrical sensor reading received. Signal stream quarantined.';
     fixStr = 'Inspect transducer wiring, power supply, and ADC conversion loop.';
@@ -1332,7 +1354,7 @@ elseif act_fb(1) > 0.5
     healthTxt = '● STATUS: COMPRESSOR STOPPED (SAFE IDLE | MOTOR STOP ACTIVE)';
     healthCol = cSteel;
     recAct = 'RESET';
-    recBanner = string('SUPERVISORY STATE: MOTOR STOPPED (IDLE)') + nl + string('Compressor drive stopped safely (0 RPM). Reset to re-engage.');
+    recBanner = "SUPERVISORY STATE: MOTOR STOPPED (IDLE)" + nl + "Compressor drive stopped safely (0 RPM). Reset to re-engage.";
     recColor = cSteel;
     partStr = sprintf('Motor Drive Train & Crankshaft Assembly\nPrime Mover Drive De-energized [Safe Idle]');
     impactStr = 'Drive halted (0 RPM, 0 A); cylinders depressurizing to atmospheric (1.01 bar). Mechanical fatigue and vibration eliminated.';
@@ -1383,11 +1405,11 @@ elseif numFaults >= 2
 
     if is_temp_bad
         recAct = 'COOLING_FAN';
-        recBanner = string('RECOMMENDED ACTUATOR: COOLING_FAN (then UNLOADER)') + nl + string(sprintf('Multi-fault active (%d faults): High IC temp + mechanical load.', numFaults));
+        recBanner = "RECOMMENDED ACTUATOR: COOLING_FAN (then UNLOADER)" + nl + string(sprintf('Multi-fault active (%d faults): High IC temp + mechanical load.', numFaults));
         recColor = cCrimson;
     else
         recAct = 'UNLOADER';
-        recBanner = string('RECOMMENDED ACTUATOR: UNLOADER (then MOTOR_STOP)') + nl + string(sprintf('Multi-fault active (%d faults): Mechanical overload detected.', numFaults));
+        recBanner = "RECOMMENDED ACTUATOR: UNLOADER (then MOTOR_STOP)" + nl + string(sprintf('Multi-fault active (%d faults): Mechanical overload detected.', numFaults));
         recColor = cCrimson;
     end
 
@@ -1396,7 +1418,7 @@ elseif is_temp_bad
     healthTxt = '● STATUS: HIGH TEMP (IC)';
     healthCol = cAmber;
     recAct = 'COOLING_FAN';
-    recBanner = string('RECOMMENDED ACTUATOR: COOLING_FAN') + nl + string(sprintf('IC temp (%.1f °C) > threshold (%.1f °C). Engage CoolingFan.', tel.t_ic_c, t_ic_lim));
+    recBanner = "RECOMMENDED ACTUATOR: COOLING_FAN" + nl + string(sprintf('IC temp (%.1f °C) > threshold (%.1f °C). Engage CoolingFan.', tel.t_ic_c, t_ic_lim));
     recColor = cAmber;
     partStr = sprintf('Interstage Intercooler (Stage 1 -> Stage 2)\nCooling Fins, Airflow Ducting & Shell Core');
     impactStr = 'High discharge gas temperature degrades lubricating oil film; hot intake into HP stage increases compression work and accelerates discharge valve thermal fatigue.';
@@ -1407,7 +1429,7 @@ elseif is_press_bad
     healthTxt = '● STATUS: HIGH PRESS (HP)';
     healthCol = cCrimson;
     recAct = 'UNLOADER';
-    recBanner = string('RECOMMENDED ACTUATOR: UNLOADER (or DRAIN)') + nl + string(sprintf('HP pressure (%.2f bar) > threshold (%.2f bar). Relieve load.', tel.p_hp_bar, p_hp_lim));
+    recBanner = "RECOMMENDED ACTUATOR: UNLOADER (or DRAIN)" + nl + string(sprintf('HP pressure (%.2f bar) > threshold (%.2f bar). Relieve load.', tel.p_hp_bar, p_hp_lim));
     recColor = cCrimson;
     partStr = sprintf('HP Stage Discharge Head & Receiver Tank\nDischarge Reed Valves, Delivery Manifold & Vessel');
     impactStr = 'Excessive mechanical pressure cycle stress on HP cylinder head, discharge reeds, and receiver vessel; causes motor overcurrent and risks pressure relief lifting.';
@@ -1418,7 +1440,7 @@ elseif is_speed_bad
     healthTxt = '● STATUS: HIGH SPEED (RPM)';
     healthCol = cAmber;
     recAct = 'UNLOADER';
-    recBanner = string('RECOMMENDED ACTUATOR: UNLOADER / MOTOR_STOP') + nl + string(sprintf('Speed (%.0f RPM) > threshold (%.0f RPM). Unload or stop.', tel.rpm, rpm_lim));
+    recBanner = "RECOMMENDED ACTUATOR: UNLOADER / MOTOR_STOP" + nl + string(sprintf('Speed (%.0f RPM) > threshold (%.0f RPM). Unload or stop.', tel.rpm, rpm_lim));
     recColor = cAmber;
     partStr = sprintf('Motor Drive & Crankshaft Speed Governor\nInverter Frequency Controller & Rotational Coupling');
     impactStr = 'Excessive reciprocating inertia forces on connecting rods and bearings; increased mechanical friction, vibration, and stator overheating.';
@@ -1429,7 +1451,7 @@ elseif is_vib_bad
     healthTxt = '● STATUS: HIGH VIBRATION';
     healthCol = cAmber;
     recAct = 'UNLOADER';
-    recBanner = string('RECOMMENDED ACTUATOR: UNLOADER / MOTOR_STOP') + nl + string(sprintf('Vibration (%.2f mm/s) > threshold (%.2f mm/s). Unload & inspect.', tel.vib_mm_s, vib_lim));
+    recBanner = "RECOMMENDED ACTUATOR: UNLOADER / MOTOR_STOP" + nl + string(sprintf('Vibration (%.2f mm/s) > threshold (%.2f mm/s). Unload & inspect.', tel.vib_mm_s, vib_lim));
     recColor = cAmber;
     partStr = sprintf('Crankcase, Bearings & Structural Mounts\nFoundation Anchor Fasteners & Main Bearings');
     impactStr = 'High mechanical vibration indicates dynamic unbalance, loose foundation fasteners, or bearing fatigue; risks catastrophic bearing seizure if prolonged.';
@@ -1440,7 +1462,7 @@ elseif is_leak_bad
     healthTxt = '● STATUS: VALVE LEAKAGE';
     healthCol = cAmber;
     recAct = 'UNLOADER';
-    recBanner = string('RECOMMENDED ACTUATOR: UNLOADER') + nl + string(sprintf('Stage ratio (%.2f) < %.1f. Unload & inspect valves.', ratioVal, ratio_lim));
+    recBanner = "RECOMMENDED ACTUATOR: UNLOADER" + nl + string(sprintf('Stage ratio (%.2f) < %.1f. Unload & inspect valves.', ratioVal, ratio_lim));
     recColor = cAmber;
     partStr = sprintf('LP / HP Suction & Discharge Valve Plates\nReed Port Flappers, Return Springs & Seat Seals');
     impactStr = 'Interstage valve slip causes continuous gas recirculation, severe delivery flow loss, and localized interstage reheating.';
@@ -1457,7 +1479,7 @@ else
         healthTxt = sprintf('● STATUS: MITIGATED / ACTIVE CONTROL [%s]', actStr);
         healthCol = cSage;
         recAct = 'MONITOR';
-        recBanner = string(sprintf('ACTIVE CONTROL ENGAGED: %s', actStr)) + nl + string('Actuator applied. Telemetry channels brought into safe threshold limits.');
+        recBanner = string(sprintf('ACTIVE CONTROL ENGAGED: %s', actStr)) + nl + "Actuator applied. Telemetry channels brought into safe threshold limits.";
         recColor = cSage;
         targetSub = '';
         if contains(actStr, 'COOLING_FAN'), targetSub = 'Target Subsystem: Interstage Cooling & Thermal Management';
@@ -1477,7 +1499,7 @@ else
         healthTxt = '● STATUS: NOMINAL  |  ALL CHANNELS HEALTHY';
         healthCol = cSage;
         recAct = 'NONE';
-        recBanner = string('RECOMMENDED ACTUATOR: NONE (Nominal)') + nl + string('All monitored channels within normal operating limits.');
+        recBanner = "RECOMMENDED ACTUATOR: NONE (Nominal)" + nl + "All monitored channels within normal operating limits.";
         recColor = cSage;
         partStr = sprintf('None — All Subsystems Nominal\nCylinders, Intercooler, Valves & Bearings Healthy');
         impactStr = 'Operating within thermodynamic and mechanical design limits. Stable 2-stage compression, balanced thermal dissipation, and normal vibration levels.';

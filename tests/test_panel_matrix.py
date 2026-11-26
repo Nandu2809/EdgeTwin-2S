@@ -146,8 +146,13 @@ class TestPanelMatrix(unittest.TestCase):
     def test_deduplication_and_store_and_forward_buffer(self):
         """Verify event deduplication, event-time ordering, and store-and-forward outage reconciliation."""
         test_csv_path = REPORTS_DIR / "test_store_audit.csv"
-        if test_csv_path.exists():
-            test_csv_path.unlink()
+        for p in [test_csv_path, test_csv_path.with_suffix(".sqlite"),
+                  test_csv_path.with_suffix(".sqlite-wal"), test_csv_path.with_suffix(".sqlite-shm")]:
+            if p.exists():
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
 
         store = EventStore(persistence_file=test_csv_path)
         store.clear()
@@ -213,8 +218,13 @@ class TestPanelMatrix(unittest.TestCase):
             self.assertGreaterEqual(len(lines), 4)  # 1 header + 3 rows
 
         # Clean up test audit file
-        if test_csv_path.exists():
-            test_csv_path.unlink()
+        for p in [test_csv_path, test_csv_path.with_suffix(".sqlite"),
+                  test_csv_path.with_suffix(".sqlite-wal"), test_csv_path.with_suffix(".sqlite-shm")]:
+            if p.exists():
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
 
     # =========================================================================
     # Test 5: Latency Benchmark (Section 7 & 11.1 Item E)

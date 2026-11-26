@@ -39,8 +39,13 @@ def run_offline_edge_demo() -> Dict[str, Any]:
     df = pd.read_csv(DATA_FILE, sep=";")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     demo_store_csv = REPORTS_DIR / "offline_demo_store.csv"
-    if demo_store_csv.exists():
-        demo_store_csv.unlink()
+    for p in [demo_store_csv, demo_store_csv.with_suffix(".sqlite"),
+              demo_store_csv.with_suffix(".sqlite-wal"), demo_store_csv.with_suffix(".sqlite-shm")]:
+        if p.exists():
+            try:
+                p.unlink()
+            except Exception:
+                pass
 
     store = EventStore(persistence_file=demo_store_csv)
     store.clear()
